@@ -17,6 +17,14 @@ mkdir -p administrator/components/com_cluborganisation
 mkdir -p components/com_cluborganisation
 ```
 
+## Build installable ZIP
+
+```bash
+./build.sh
+```
+
+The archive will be created at `dist/com_cluborganisation.zip`.
+
 ## Iteration notes
 
 This initial iteration delivers the component structure, database schema, administration lists/forms,
