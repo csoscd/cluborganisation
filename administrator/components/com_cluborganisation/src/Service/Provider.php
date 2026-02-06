@@ -15,10 +15,8 @@ use Joomla\CMS\Component\ComponentInterface;
 use Joomla\CMS\Dispatcher\ComponentDispatcherFactoryInterface;
 use Joomla\CMS\Extension\Service\Provider\CategoryFactory;
 use Joomla\CMS\Extension\Service\Provider\ComponentDispatcherFactory;
-use Joomla\CMS\Extension\Service\Provider\ComponentRouterFactory;
 use Joomla\CMS\Extension\Service\Provider\MVCFactory;
 use Joomla\CMS\MVC\Factory\MVCFactoryInterface;
-use Joomla\CMS\Router\RouterFactoryInterface;
 use Joomla\DI\Container;
 use Joomla\DI\ServiceProviderInterface;
 use Joomla\Component\Cluborganisation\Administrator\Extension\CluborganisationComponent;
@@ -39,7 +37,6 @@ class Provider implements ServiceProviderInterface
     {
         $container->registerServiceProvider(new MVCFactory('Joomla\\Component\\Cluborganisation'));
         $container->registerServiceProvider(new ComponentDispatcherFactory('Joomla\\Component\\Cluborganisation'));
-        $container->registerServiceProvider(new ComponentRouterFactory('Joomla\\Component\\Cluborganisation'));
         $container->registerServiceProvider(new CategoryFactory('Joomla\\Component\\Cluborganisation'));
 
         $container->set(
@@ -47,8 +44,6 @@ class Provider implements ServiceProviderInterface
             function (Container $container) {
                 $component = new CluborganisationComponent($container->get(ComponentDispatcherFactoryInterface::class));
                 $component->setMVCFactory($container->get(MVCFactoryInterface::class));
-                $component->setRouterFactory($container->get(RouterFactoryInterface::class));
-
                 return $component;
             }
         );
