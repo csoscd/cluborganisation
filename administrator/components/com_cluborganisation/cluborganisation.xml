@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="component" method="upgrade" version="5.0" client="administrator">
+    <name>COM_CLUBORGANISATION</name>
+    <author>Christian Schulz</author>
+    <creationDate>2025-02-05</creationDate>
+    <copyright>Copyright (C) 2025 Christian Schulz</copyright>
+    <license>GPL-2.0-or-later</license>
+    <authorEmail>technik@meinetechnikwelt.rocks</authorEmail>
+    <authorUrl>https://meinetechnikwelt.rocks</authorUrl>
+    <version>1.0.0</version>
+    <description>COM_CLUBORGANISATION_XML_DESCRIPTION</description>
+
+    <namespace path="src">Joomla\Component\Cluborganisation</namespace>
+
+    <administration>
+        <menu>COM_CLUBORGANISATION</menu>
+        <files folder="administrator/components/com_cluborganisation">
+            <filename>cluborganisation.xml</filename>
+            <filename>menu.xml</filename>
+            <folder>src</folder>
+            <folder>tmpl</folder>
+            <folder>forms</folder>
+            <folder>language</folder>
+            <folder>sql</folder>
+            <folder>services</folder>
+            <filename>config.xml</filename>
+        </files>
+        <languages folder="administrator/components/com_cluborganisation/language">
+            <language tag="en-GB">en-GB/en-GB.com_cluborganisation.ini</language>
+            <language tag="en-GB">en-GB/en-GB.com_cluborganisation.sys.ini</language>
+            <language tag="de-DE">de-DE/de-DE.com_cluborganisation.ini</language>
+            <language tag="de-DE">de-DE/de-DE.com_cluborganisation.sys.ini</language>
+        </languages>
+    </administration>
+
+    <site>
+        <files folder="components/com_cluborganisation">
+            <folder>src</folder>
+            <folder>tmpl</folder>
+            <folder>language</folder>
+            <folder>services</folder>
+            <folder>forms</folder>
+        </files>
+        <languages folder="components/com_cluborganisation/language">
+            <language tag="en-GB">en-GB/en-GB.com_cluborganisation.ini</language>
+            <language tag="de-DE">de-DE/de-DE.com_cluborganisation.ini</language>
+        </languages>
+    </site>
+
+    <install>
+        <sql>
+            <file driver="mysql" charset="utf8mb4">sql/install.mysql.utf8mb4.sql</file>
+        </sql>
+    </install>
+    <uninstall>
+        <sql>
+            <file driver="mysql" charset="utf8mb4">sql/uninstall.mysql.utf8mb4.sql</file>
+        </sql>
+    </uninstall>
+</extension>
