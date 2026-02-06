@@ -10,6 +10,7 @@
 declare(strict_types=1);
 
 use Joomla\CMS\Factory;
+use Joomla\CMS\Loader\JLoader;
 
 defined('_JEXEC') or die;
 
@@ -29,6 +30,9 @@ if (method_exists($component, 'execute')) {
 
 $controller = $app->input->getCmd('controller', $app->input->getCmd('view', ''));
 $task = $app->input->getCmd('task', $controller);
+
+$namespaceRoot = __DIR__ . '/src';
+JLoader::registerNamespace('Joomla\\Component\\Cluborganisation\\Site', $namespaceRoot);
 
 $controllerClass = $controller ? ucfirst($controller) : 'Display';
 $className = 'Joomla\\\\Component\\\\Cluborganisation\\\\Site\\\\Controller\\\\' . $controllerClass . 'Controller';
