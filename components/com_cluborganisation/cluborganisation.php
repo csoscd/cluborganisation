@@ -15,5 +15,4 @@ defined('_JEXEC') or die;
 
 $app = Factory::getApplication();
 $component = $app->bootComponent('com_cluborganisation');
-$component->execute($app->input->getCmd('task'));
-$component->redirect();
+$component->dispatch($app->input);
