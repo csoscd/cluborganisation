@@ -49,12 +49,12 @@
 
     <install>
         <sql>
-            <file driver="mysql" charset="utf8">administrator/components/com_cluborganisation/sql/install.mysql.utf8mb4.sql</file>
+            <file driver="mysql" charset="utf8">sql/install.mysql.utf8mb4.sql</file>
         </sql>
     </install>
     <uninstall>
         <sql>
-            <file driver="mysql" charset="utf8">administrator/components/com_cluborganisation/sql/uninstall.mysql.utf8mb4.sql</file>
+            <file driver="mysql" charset="utf8">sql/uninstall.mysql.utf8mb4.sql</file>
         </sql>
     </uninstall>
 </extension>
