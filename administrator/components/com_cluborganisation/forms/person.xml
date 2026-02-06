@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<form>
+    <fieldset name="details" label="COM_CLUBORGANISATION_TABLE_PERSONS">
+        <field name="id" type="hidden" />
+        <field name="salutation_id" type="sql" label="COM_CLUBORGANISATION_FIELD_SALUTATION_LABEL" required="true" query="SELECT id AS value, title AS text FROM #__cluborganisation_salutations WHERE published = 1 ORDER BY ordering, title" />
+        <field name="firstname" type="text" label="COM_CLUBORGANISATION_FIELD_FIRSTNAME_LABEL" required="true" />
+        <field name="middlename" type="text" label="COM_CLUBORGANISATION_FIELD_MIDDLENAME_LABEL" />
+        <field name="lastname" type="text" label="COM_CLUBORGANISATION_FIELD_LASTNAME_LABEL" required="true" />
+        <field name="birthname" type="text" label="COM_CLUBORGANISATION_FIELD_BIRTHNAME_LABEL" />
+        <field name="address" type="text" label="COM_CLUBORGANISATION_FIELD_ADDRESS_LABEL" required="true" />
+        <field name="city" type="text" label="COM_CLUBORGANISATION_FIELD_CITY_LABEL" required="true" />
+        <field name="zip" type="text" label="COM_CLUBORGANISATION_FIELD_ZIP_LABEL" required="true" />
+        <field name="country" type="text" label="COM_CLUBORGANISATION_FIELD_COUNTRY_LABEL" required="true" />
+        <field name="telephone" type="text" label="COM_CLUBORGANISATION_FIELD_TELEPHONE_LABEL" />
+        <field name="mobile" type="text" label="COM_CLUBORGANISATION_FIELD_MOBILE_LABEL" required="true" />
+        <field name="email" type="email" label="COM_CLUBORGANISATION_FIELD_EMAIL_LABEL" required="true" />
+        <field name="birthday" type="calendar" label="COM_CLUBORGANISATION_FIELD_BIRTHDAY_LABEL" required="true" />
+        <field name="deceased" type="calendar" label="COM_CLUBORGANISATION_FIELD_DECEASED_LABEL" />
+        <field name="member_no" type="text" label="COM_CLUBORGANISATION_FIELD_MEMBER_NO_LABEL" required="true" />
+        <field name="active" type="list" label="COM_CLUBORGANISATION_FIELD_ACTIVE_LABEL" default="1">
+            <option value="1">JYES</option>
+            <option value="0">JNO</option>
+        </field>
+        <field name="image" type="media" label="COM_CLUBORGANISATION_FIELD_IMAGE_LABEL" />
+        <field name="user_id" type="user" label="COM_CLUBORGANISATION_FIELD_USER_LABEL" />
+    </fieldset>
+</form>
