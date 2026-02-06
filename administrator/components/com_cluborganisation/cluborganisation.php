@@ -43,7 +43,16 @@ $controllerMap = [
     'membershiptypes' => 'MembershipTypes',
 ];
 
-$controllerClass = $controller ? ($controllerMap[$controller] ?? ucfirst($controller)) : 'Display';
+$normalizeController = static function (string $name): string {
+    $parts = preg_split('/[^a-z0-9]+/i', $name, -1, PREG_SPLIT_NO_EMPTY);
+    $parts = array_map(static fn(string $part): string => ucfirst(strtolower($part)), $parts);
+
+    return $parts ? implode('', $parts) : '';
+};
+
+$controllerClass = $controller
+    ? ($controllerMap[$controller] ?? $normalizeController($controller))
+    : 'Display';
 $className = 'Joomla\\\\Component\\\\Cluborganisation\\\\Administrator\\\\Controller\\\\' . $controllerClass . 'Controller';
 
 if (!class_exists($className)) {
