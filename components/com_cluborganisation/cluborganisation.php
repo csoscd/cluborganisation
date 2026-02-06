@@ -30,7 +30,14 @@ if (method_exists($component, 'execute')) {
 $controller = $app->input->getCmd('controller', $app->input->getCmd('view', ''));
 $task = $app->input->getCmd('task', $controller);
 
-$controllerClass = $controller ? ucfirst($controller) : 'Display';
+$controllerMap = [
+    'activememberships' => 'ActiveMemberships',
+    'reports' => 'Reports',
+    'profile' => 'Profile',
+    'profileedit' => 'ProfileEdit',
+];
+
+$controllerClass = $controller ? ($controllerMap[$controller] ?? ucfirst($controller)) : 'Display';
 $className = 'Joomla\\\\Component\\\\Cluborganisation\\\\Site\\\\Controller\\\\' . $controllerClass . 'Controller';
 
 if (!class_exists($className)) {
