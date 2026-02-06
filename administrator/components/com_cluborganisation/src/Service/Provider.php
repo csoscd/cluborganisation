@@ -35,9 +35,9 @@ class Provider implements ServiceProviderInterface
      */
     public function register(Container $container): void
     {
-        $container->registerServiceProvider(new MVCFactory('Joomla\\Component\\Cluborganisation'));
-        $container->registerServiceProvider(new ComponentDispatcherFactory('Joomla\\Component\\Cluborganisation'));
-        $container->registerServiceProvider(new CategoryFactory('Joomla\\Component\\Cluborganisation'));
+        $container->registerServiceProvider(new MVCFactory('Joomla\\Component\\Cluborganisation\\Administrator'));
+        $container->registerServiceProvider(new ComponentDispatcherFactory('Joomla\\Component\\Cluborganisation\\Administrator'));
+        $container->registerServiceProvider(new CategoryFactory('Joomla\\Component\\Cluborganisation\\Administrator'));
 
         $container->set(
             ComponentInterface::class,
