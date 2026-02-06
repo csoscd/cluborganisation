@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu>
+    <title>COM_CLUBORGANISATION</title>
+    <submenu>
+        <menu link="option=com_cluborganisation&view=persons">COM_CLUBORGANISATION_MENU_PERSONS</menu>
+        <menu link="option=com_cluborganisation&view=memberships">COM_CLUBORGANISATION_MENU_MEMBERSHIPS</menu>
+        <menu link="option=com_cluborganisation&view=membershipbanks">COM_CLUBORGANISATION_MENU_MEMBERSHIP_BANKS</menu>
+        <menu link="option=com_cluborganisation&view=salutations">COM_CLUBORGANISATION_MENU_SALUTATIONS</menu>
+        <menu link="option=com_cluborganisation&view=membershiptypes">COM_CLUBORGANISATION_MENU_MEMBERSHIP_TYPES</menu>
+    </submenu>
+</menu>
