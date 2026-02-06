@@ -17,6 +17,7 @@
         <files folder="administrator/components/com_cluborganisation">
             <filename>cluborganisation.xml</filename>
             <filename>menu.xml</filename>
+            <filename>cluborganisation.php</filename>
             <folder>src</folder>
             <folder>tmpl</folder>
             <folder>forms</folder>
@@ -35,6 +36,7 @@
 
     <site>
         <files folder="components/com_cluborganisation">
+            <filename>cluborganisation.php</filename>
             <folder>src</folder>
             <folder>tmpl</folder>
             <folder>language</folder>
@@ -49,12 +51,12 @@
 
     <install>
         <sql>
-            <file driver="mysql" charset="utf8">sql/install.mysql.utf8mb4.sql</file>
+            <file driver="mysql" charset="utf8mb4">administrator/components/com_cluborganisation/sql/install.mysql.utf8mb4.sql</file>
         </sql>
     </install>
     <uninstall>
         <sql>
-            <file driver="mysql" charset="utf8">sql/uninstall.mysql.utf8mb4.sql</file>
+            <file driver="mysql" charset="utf8mb4">administrator/components/com_cluborganisation/sql/uninstall.mysql.utf8mb4.sql</file>
         </sql>
     </uninstall>
 </extension>
