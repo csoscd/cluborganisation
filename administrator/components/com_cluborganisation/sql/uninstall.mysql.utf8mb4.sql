@@ -1,0 +1,1 @@
+-- Keep tables intact on uninstall to preserve data.
