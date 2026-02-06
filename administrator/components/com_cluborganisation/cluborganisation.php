@@ -9,12 +9,11 @@
 
 declare(strict_types=1);
 
-use Joomla\CMS\Extension\ExtensionHelper;
 use Joomla\CMS\Factory;
 
 defined('_JEXEC') or die;
 
-$container = Factory::getContainer();
-$component = ExtensionHelper::getComponent('com_cluborganisation');
-$dispatcher = $component->getDispatcher($container);
-$dispatcher->dispatch();
+$app = Factory::getApplication();
+$component = $app->bootComponent('com_cluborganisation');
+$component->execute($app->input->getCmd('task'));
+$component->redirect();
