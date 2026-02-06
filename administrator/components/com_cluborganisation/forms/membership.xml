@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<form>
+    <fieldset name="details" label="COM_CLUBORGANISATION_TABLE_MEMBERSHIPS">
+        <field name="id" type="hidden" />
+        <field name="person_id" type="sql" label="COM_CLUBORGANISATION_FIELD_PERSON_LABEL" required="true" query="SELECT id AS value, CONCAT(lastname, ', ', firstname) AS text FROM #__cluborganisation_persons WHERE active = 1 ORDER BY lastname, firstname" />
+        <field name="type_id" type="sql" label="COM_CLUBORGANISATION_FIELD_MEMBERSHIP_TYPE_LABEL" required="true" query="SELECT id AS value, title AS text FROM #__cluborganisation_membership_types WHERE published = 1 ORDER BY ordering, title" />
+        <field name="begin" type="calendar" label="COM_CLUBORGANISATION_FIELD_BEGIN_LABEL" required="true" />
+        <field name="end" type="calendar" label="COM_CLUBORGANISATION_FIELD_END_LABEL" />
+        <field name="catid" type="category" label="COM_CLUBORGANISATION_FIELD_CATID_LABEL" extension="com_cluborganisation" />
+    </fieldset>
+</form>

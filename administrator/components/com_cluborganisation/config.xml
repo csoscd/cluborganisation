@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<form>
+    <fieldset name="active_memberships" label="COM_CLUBORGANISATION_CONFIG_ACTIVE_MEMBERSHIPS">
+        <field name="active_fields" type="checkboxes" label="COM_CLUBORGANISATION_CONFIG_ACTIVE_FIELDS" description="COM_CLUBORGANISATION_CONFIG_ACTIVE_FIELDS_DESC">
+            <option value="person.firstname">COM_CLUBORGANISATION_FIELD_FIRSTNAME_LABEL</option>
+            <option value="person.lastname">COM_CLUBORGANISATION_FIELD_LASTNAME_LABEL</option>
+            <option value="person.member_no">COM_CLUBORGANISATION_FIELD_MEMBER_NO_LABEL</option>
+            <option value="membership.type">COM_CLUBORGANISATION_FIELD_MEMBERSHIP_TYPE_LABEL</option>
+            <option value="membership.begin">COM_CLUBORGANISATION_FIELD_BEGIN_LABEL</option>
+            <option value="membership.end">COM_CLUBORGANISATION_FIELD_END_LABEL</option>
+        </field>
+    </fieldset>
+    <fieldset name="reports" label="COM_CLUBORGANISATION_CONFIG_REPORTS">
+        <field name="report_year" type="list" label="COM_CLUBORGANISATION_CONFIG_REPORT_YEAR" description="COM_CLUBORGANISATION_CONFIG_REPORT_YEAR_DESC" default="">
+            <option value="">COM_CLUBORGANISATION_CONFIG_REPORT_YEAR_AUTO</option>
+            <option value="-5">COM_CLUBORGANISATION_CONFIG_REPORT_YEAR_MINUS_5</option>
+            <option value="-4">COM_CLUBORGANISATION_CONFIG_REPORT_YEAR_MINUS_4</option>
+            <option value="-3">COM_CLUBORGANISATION_CONFIG_REPORT_YEAR_MINUS_3</option>
+            <option value="-2">COM_CLUBORGANISATION_CONFIG_REPORT_YEAR_MINUS_2</option>
+            <option value="-1">COM_CLUBORGANISATION_CONFIG_REPORT_YEAR_MINUS_1</option>
+            <option value="0">COM_CLUBORGANISATION_CONFIG_REPORT_YEAR_CURRENT</option>
+            <option value="1">COM_CLUBORGANISATION_CONFIG_REPORT_YEAR_PLUS_1</option>
+        </field>
+        <field name="report_fields" type="checkboxes" label="COM_CLUBORGANISATION_CONFIG_REPORT_FIELDS" description="COM_CLUBORGANISATION_CONFIG_REPORT_FIELDS_DESC">
+            <option value="person.firstname">COM_CLUBORGANISATION_FIELD_FIRSTNAME_LABEL</option>
+            <option value="person.lastname">COM_CLUBORGANISATION_FIELD_LASTNAME_LABEL</option>
+            <option value="person.member_no">COM_CLUBORGANISATION_FIELD_MEMBER_NO_LABEL</option>
+            <option value="membership.type">COM_CLUBORGANISATION_FIELD_MEMBERSHIP_TYPE_LABEL</option>
+            <option value="membership.begin">COM_CLUBORGANISATION_FIELD_BEGIN_LABEL</option>
+            <option value="membership.end">COM_CLUBORGANISATION_FIELD_END_LABEL</option>
+        </field>
+    </fieldset>
+    <fieldset name="profile" label="COM_CLUBORGANISATION_CONFIG_PROFILE">
+        <field name="profile_view_fields" type="checkboxes" label="COM_CLUBORGANISATION_CONFIG_PROFILE_VIEW_FIELDS" description="COM_CLUBORGANISATION_CONFIG_PROFILE_VIEW_FIELDS_DESC">
+            <option value="person.firstname">COM_CLUBORGANISATION_FIELD_FIRSTNAME_LABEL</option>
+            <option value="person.lastname">COM_CLUBORGANISATION_FIELD_LASTNAME_LABEL</option>
+            <option value="person.email">COM_CLUBORGANISATION_FIELD_EMAIL_LABEL</option>
+            <option value="person.mobile">COM_CLUBORGANISATION_FIELD_MOBILE_LABEL</option>
+            <option value="membership.type">COM_CLUBORGANISATION_FIELD_MEMBERSHIP_TYPE_LABEL</option>
+            <option value="membership.begin">COM_CLUBORGANISATION_FIELD_BEGIN_LABEL</option>
+            <option value="membership.end">COM_CLUBORGANISATION_FIELD_END_LABEL</option>
+        </field>
+        <field name="profile_edit_fields" type="checkboxes" label="COM_CLUBORGANISATION_CONFIG_PROFILE_EDIT_FIELDS" description="COM_CLUBORGANISATION_CONFIG_PROFILE_EDIT_FIELDS_DESC">
+            <option value="person.email">COM_CLUBORGANISATION_FIELD_EMAIL_LABEL</option>
+            <option value="person.mobile">COM_CLUBORGANISATION_FIELD_MOBILE_LABEL</option>
+            <option value="person.telephone">COM_CLUBORGANISATION_FIELD_TELEPHONE_LABEL</option>
+            <option value="person.address">COM_CLUBORGANISATION_FIELD_ADDRESS_LABEL</option>
+            <option value="person.city">COM_CLUBORGANISATION_FIELD_CITY_LABEL</option>
+            <option value="person.zip">COM_CLUBORGANISATION_FIELD_ZIP_LABEL</option>
+            <option value="person.country">COM_CLUBORGANISATION_FIELD_COUNTRY_LABEL</option>
+        </field>
+    </fieldset>
+</form>
