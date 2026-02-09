@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<form>
+    <fieldset name="details">
+        <field
+            name="id"
+            type="hidden"
+        />
+
+        <field
+            name="membership_id"
+            type="sql"
+            label="COM_CLUBORGANISATION_FIELD_MEMBERSHIP"
+            description=""
+            required="true"
+            query="SELECT m.id, CONCAT(p.lastname, ', ', p.firstname, ' (', p.member_no, ') - ', t.title, ' (', DATE_FORMAT(m.begin, '%d.%m.%Y'), IFNULL(CONCAT(' - ', DATE_FORMAT(m.end, '%d.%m.%Y')), ' - laufend'), ')') AS name FROM #__cluborganisation_memberships m LEFT JOIN #__cluborganisation_persons p ON m.person_id = p.id LEFT JOIN #__cluborganisation_membershiptypes t ON m.type = t.id ORDER BY p.lastname, p.firstname"
+            key_field="id"
+            value_field="name"
+        >
+            <option value="">COM_CLUBORGANISATION_SELECT_MEMBERSHIP</option>
+        </field>
+
+        <field
+            name="encryption_key"
+            type="password"
+            label="COM_CLUBORGANISATION_FIELD_ENCRYPTION_KEY"
+            description="COM_CLUBORGANISATION_FIELD_ENCRYPTION_KEY_DESC"
+            class="inputbox"
+            autocomplete="off"
+            hint="Required for encryption"
+        />
+
+        <field
+            name="accountname"
+            type="text"
+            label="COM_CLUBORGANISATION_FIELD_ACCOUNTNAME"
+            description=""
+            class="inputbox"
+            size="60"
+            required="true"
+        />
+
+        <field
+            name="iban"
+            type="text"
+            label="COM_CLUBORGANISATION_FIELD_IBAN"
+            description=""
+            class="inputbox"
+            size="40"
+            required="true"
+            maxlength="34"
+        />
+
+        <field
+            name="bic"
+            type="text"
+            label="COM_CLUBORGANISATION_FIELD_BIC"
+            description=""
+            class="inputbox"
+            size="20"
+            maxlength="11"
+        />
+
+        <field
+            name="begin"
+            type="calendar"
+            label="COM_CLUBORGANISATION_FIELD_BEGIN"
+            description=""
+            class="inputbox"
+            required="true"
+            format="%Y-%m-%d"
+        />
+    </fieldset>
+
+    <fieldset name="publishing">
+        <field
+            name="created"
+            type="calendar"
+            label="COM_CLUBORGANISATION_FIELD_CREATED"
+            description=""
+            class="inputbox"
+            format="%Y-%m-%d %H:%M:%S"
+            readonly="true"
+            disabled="true"
+        />
+
+        <field
+            name="created_by"
+            type="user"
+            label="COM_CLUBORGANISATION_FIELD_CREATED_BY"
+            description=""
+            readonly="true"
+            disabled="true"
+        />
+
+        <field
+            name="modified"
+            type="calendar"
+            label="COM_CLUBORGANISATION_FIELD_MODIFIED"
+            description=""
+            class="inputbox"
+            format="%Y-%m-%d %H:%M:%S"
+            readonly="true"
+            disabled="true"
+        />
+
+        <field
+            name="modified_by"
+            type="user"
+            label="COM_CLUBORGANISATION_FIELD_MODIFIED_BY"
+            description=""
+            readonly="true"
+            disabled="true"
+        />
+    </fieldset>
+</form>

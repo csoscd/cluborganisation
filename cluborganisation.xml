@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="component" method="upgrade">
+    <name>COM_CLUBORGANISATION</name>
+    <author>Christian Schulz</author>
+    <creationDate>February 2026</creationDate>
+    <copyright>Copyright (C) 2026 Christian Schulz. All rights reserved.</copyright>
+    <license>GNU General Public License version 2 or later</license>
+    <authorEmail>technik@meinetechnikwelt.rocks</authorEmail>
+    <authorUrl>https://www.meinetechnikwelt.rocks</authorUrl>
+    <version>1.0.0</version>
+    <description>COM_CLUBORGANISATION_XML_DESCRIPTION</description>
+    <namespace path="src">CSOSCD\Component\ClubOrganisation</namespace>
+
+    <install>
+        <sql>
+            <file driver="mysql" charset="utf8">sql/install/mysql.sql</file>
+        </sql>
+    </install>
+
+    <uninstall>
+        <sql>
+            <file driver="mysql" charset="utf8">sql/uninstall/mysql.sql</file>
+        </sql>
+    </uninstall>
+
+    <update>
+        <schemas>
+            <schemapath type="mysql">sql/updates</schemapath>
+        </schemas>
+    </update>
+
+    <!-- Administrator files -->
+    <administration>
+        <menu img="class:module">COM_CLUBORGANISATION</menu>
+        <submenu>
+            <menu link="option=com_cluborganisation&amp;view=persons">COM_CLUBORGANISATION_MENU_PERSONS</menu>
+            <menu link="option=com_cluborganisation&amp;view=memberships">COM_CLUBORGANISATION_MENU_MEMBERSHIPS</menu>
+            <menu link="option=com_cluborganisation&amp;view=membershipbanks">COM_CLUBORGANISATION_MENU_MEMBERSHIPBANKS</menu>
+            <menu link="option=com_cluborganisation&amp;view=salutations">COM_CLUBORGANISATION_MENU_SALUTATIONS</menu>
+            <menu link="option=com_cluborganisation&amp;view=membershiptypes">COM_CLUBORGANISATION_MENU_MEMBERSHIPTYPES</menu>
+            <menu link="option=com_cluborganisation&amp;view=migration">COM_CLUBORGANISATION_MENU_MIGRATION</menu>
+        </submenu>
+
+        <files folder="admin">
+            <filename>access.xml</filename>
+            <filename>config.xml</filename>
+            <folder>forms</folder>
+            <folder>services</folder>
+            <folder>sql</folder>
+            <folder>src</folder>
+            <folder>tmpl</folder>
+        </files>
+
+        <languages folder="admin/language">
+            <language tag="de-DE">de-DE/de-DE.com_cluborganisation.ini</language>
+            <language tag="de-DE">de-DE/de-DE.com_cluborganisation.sys.ini</language>
+            <language tag="en-GB">en-GB/en-GB.com_cluborganisation.ini</language>
+            <language tag="en-GB">en-GB/en-GB.com_cluborganisation.sys.ini</language>
+        </languages>
+    </administration>
+
+    <!-- Site files -->
+    <files folder="site">
+        <folder>src</folder>
+        <folder>tmpl</folder>
+	<folder>services</folder>
+    </files>
+
+    <languages folder="site/language">
+        <language tag="de-DE">de-DE/de-DE.com_cluborganisation.ini</language>
+        <language tag="en-GB">en-GB/en-GB.com_cluborganisation.ini</language>
+    </languages>
+
+    <!-- Media files -->
+    <media destination="com_cluborganisation" folder="media">
+        <folder>css</folder>
+        <folder>js</folder>
+        <folder>images</folder>
+    </media>
+
+    <config>
+        <fields name="params">
+            <fieldset name="basic" label="COM_CLUBORGANISATION_CONFIG_BASIC_LABEL">
+                <field
+                    name="encryption_key"
+                    type="password"
+                    label="COM_CLUBORGANISATION_CONFIG_ENCRYPTION_KEY_LABEL"
+                    description="COM_CLUBORGANISATION_CONFIG_ENCRYPTION_KEY_DESC"
+                    autocomplete="off"
+                />
+            </fieldset>
+        </fields>
+    </config>
+</extension>

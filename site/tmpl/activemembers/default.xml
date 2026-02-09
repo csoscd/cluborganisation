@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="utf-8"?>
+<metadata>
+    <layout title="COM_CLUBORGANISATION_ACTIVEMEMBERS_VIEW_DEFAULT_TITLE">
+        <help
+            key="Menu_Item:_ClubOrganisation_Activemembers" />
+        <message>
+            <![CDATA[COM_CLUBORGANISATION_ACTIVEMEMBERS_VIEW_DEFAULT_DESC]]>
+        </message>
+    </layout>
+
+    <!-- Add fields for menu item parameters if needed -->
+    <fields name="request">
+        <fieldset name="request">
+            <field
+                name="id"
+                type="hidden"
+                default="0"
+            />
+        </fieldset>
+    </fields>
+
+    <fields name="params">
+        <fieldset name="basic" label="JGLOBAL_FIELDSET_DISPLAY_OPTIONS">
+            <field
+                name="show_page_heading"
+                type="list"
+                label="JGLOBAL_SHOW_PAGE_HEADING_LABEL"
+                default="1"
+                >
+                <option value="0">JHIDE</option>
+                <option value="1">JSHOW</option>
+            </field>
+
+            <field
+                name="page_heading"
+                type="text"
+                label="JGLOBAL_PAGE_HEADING_LABEL"
+                showon="show_page_heading:1"
+            />
+
+            <field
+                name="show_intro"
+                type="list"
+                label="COM_CLUBORGANISATION_FIELD_SHOW_INTRO_LABEL"
+                description="COM_CLUBORGANISATION_FIELD_SHOW_INTRO_DESC"
+                default="1"
+                >
+                <option value="0">JHIDE</option>
+                <option value="1">JSHOW</option>
+            </field>
+        </fieldset>
+
+        <fieldset name="columns" label="COM_CLUBORGANISATION_FIELDSET_COLUMNS_LABEL">
+            <field
+                name="show_member_no"
+                type="list"
+                label="COM_CLUBORGANISATION_FIELD_SHOW_MEMBER_NO"
+                default="1"
+                >
+                <option value="0">JHIDE</option>
+                <option value="1">JSHOW</option>
+            </field>
+
+            <field
+                name="show_salutation"
+                type="list"
+                label="COM_CLUBORGANISATION_FIELD_SHOW_SALUTATION"
+                default="0"
+                >
+                <option value="0">JHIDE</option>
+                <option value="1">JSHOW</option>
+            </field>
+
+            <field
+                name="show_firstname"
+                type="list"
+                label="COM_CLUBORGANISATION_FIELD_SHOW_FIRSTNAME"
+                default="1"
+                >
+                <option value="0">JHIDE</option>
+                <option value="1">JSHOW</option>
+            </field>
+
+            <field
+                name="show_lastname"
+                type="list"
+                label="COM_CLUBORGANISATION_FIELD_SHOW_LASTNAME"
+                default="1"
+                >
+                <option value="0">JHIDE</option>
+                <option value="1">JSHOW</option>
+            </field>
+
+            <field
+                name="show_address"
+                type="list"
+                label="COM_CLUBORGANISATION_FIELD_SHOW_ADDRESS"
+                default="0"
+                >
+                <option value="0">JHIDE</option>
+                <option value="1">JSHOW</option>
+            </field>
+
+            <field
+                name="show_zip"
+                type="list"
+                label="COM_CLUBORGANISATION_FIELD_SHOW_ZIP"
+                default="0"
+                >
+                <option value="0">JHIDE</option>
+                <option value="1">JSHOW</option>
+            </field>
+
+            <field
+                name="show_city"
+                type="list"
+                label="COM_CLUBORGANISATION_FIELD_SHOW_CITY"
+                default="0"
+                >
+                <option value="0">JHIDE</option>
+                <option value="1">JSHOW</option>
+            </field>
+
+            <field
+                name="show_telephone"
+                type="list"
+                label="COM_CLUBORGANISATION_FIELD_SHOW_TELEPHONE"
+                default="0"
+                >
+                <option value="0">JHIDE</option>
+                <option value="1">JSHOW</option>
+            </field>
+
+            <field
+                name="show_mobile"
+                type="list"
+                label="COM_CLUBORGANISATION_FIELD_SHOW_MOBILE"
+                default="0"
+                >
+                <option value="0">JHIDE</option>
+                <option value="1">JSHOW</option>
+            </field>
+
+            <field
+                name="show_email"
+                type="list"
+                label="COM_CLUBORGANISATION_FIELD_SHOW_EMAIL"
+                default="0"
+                >
+                <option value="0">JHIDE</option>
+                <option value="1">JSHOW</option>
+            </field>
+
+            <field
+                name="show_birthdate"
+                type="list"
+                label="COM_CLUBORGANISATION_FIELD_SHOW_BIRTHDATE"
+                default="0"
+                >
+                <option value="0">JHIDE</option>
+                <option value="1">JSHOW</option>
+            </field>
+
+            <field
+                name="show_membership_type"
+                type="list"
+                label="COM_CLUBORGANISATION_FIELD_SHOW_MEMBERSHIP_TYPE"
+                default="1"
+                >
+                <option value="0">JHIDE</option>
+                <option value="1">JSHOW</option>
+            </field>
+
+            <field
+                name="show_membership_begin"
+                type="list"
+                label="COM_CLUBORGANISATION_FIELD_SHOW_MEMBERSHIP_BEGIN"
+                default="1"
+                >
+                <option value="0">JHIDE</option>
+                <option value="1">JSHOW</option>
+            </field>
+
+            <field
+                name="show_membership_end"
+                type="list"
+                label="COM_CLUBORGANISATION_FIELD_SHOW_MEMBERSHIP_END"
+                default="0"
+                >
+                <option value="0">JHIDE</option>
+                <option value="1">JSHOW</option>
+            </field>
+
+            <field
+                name="show_first_membership"
+                type="list"
+                label="COM_CLUBORGANISATION_FIELD_SHOW_FIRST_MEMBERSHIP"
+                description="COM_CLUBORGANISATION_FIELD_SHOW_FIRST_MEMBERSHIP_DESC"
+                default="0"
+                >
+                <option value="0">JHIDE</option>
+                <option value="1">JSHOW</option>
+            </field>
+
+            <field
+                name="show_entry_year"
+                type="list"
+                label="COM_CLUBORGANISATION_FIELD_SHOW_ENTRY_YEAR"
+                description="COM_CLUBORGANISATION_FIELD_SHOW_ENTRY_YEAR_DESC"
+                default="0"
+                >
+                <option value="0">JHIDE</option>
+                <option value="1">JSHOW</option>
+            </field>
+
+            <field
+                name="show_exit_year"
+                type="list"
+                label="COM_CLUBORGANISATION_FIELD_SHOW_EXIT_YEAR"
+                description="COM_CLUBORGANISATION_FIELD_SHOW_EXIT_YEAR_DESC"
+                default="0"
+                >
+                <option value="0">JHIDE</option>
+                <option value="1">JSHOW</option>
+            </field>
+        </fieldset>
+
+        <fieldset name="sorting" label="COM_CLUBORGANISATION_FIELDSET_SORTING_LABEL">
+            <field
+                name="orderby_pri"
+                type="list"
+                label="COM_CLUBORGANISATION_FIELD_ORDERBY_PRI"
+                description="COM_CLUBORGANISATION_FIELD_ORDERBY_PRI_DESC"
+                default="lastname"
+                >
+                <option value="member_no">COM_CLUBORGANISATION_ORDERBY_MEMBER_NO</option>
+                <option value="lastname">COM_CLUBORGANISATION_ORDERBY_LASTNAME</option>
+                <option value="firstname">COM_CLUBORGANISATION_ORDERBY_FIRSTNAME</option>
+                <option value="city">COM_CLUBORGANISATION_ORDERBY_CITY</option>
+                <option value="zip">COM_CLUBORGANISATION_ORDERBY_ZIP</option>
+                <option value="birthday">COM_CLUBORGANISATION_ORDERBY_BIRTHDAY</option>
+                <option value="membership_type">COM_CLUBORGANISATION_ORDERBY_MEMBERSHIP_TYPE</option>
+                <option value="membership_begin">COM_CLUBORGANISATION_ORDERBY_MEMBERSHIP_BEGIN</option>
+                <option value="first_membership">COM_CLUBORGANISATION_ORDERBY_FIRST_MEMBERSHIP</option>
+                <option value="entry_year">COM_CLUBORGANISATION_ORDERBY_ENTRY_YEAR</option>
+                <option value="exit_year">COM_CLUBORGANISATION_ORDERBY_EXIT_YEAR</option>
+            </field>
+
+            <field
+                name="order_dir"
+                type="list"
+                label="COM_CLUBORGANISATION_FIELD_ORDER_DIR"
+                description="COM_CLUBORGANISATION_FIELD_ORDER_DIR_DESC"
+                default="ASC"
+                >
+                <option value="ASC">COM_CLUBORGANISATION_ORDER_ASC</option>
+                <option value="DESC">COM_CLUBORGANISATION_ORDER_DESC</option>
+            </field>
+
+            <field
+                name="orderby_sec"
+                type="list"
+                label="COM_CLUBORGANISATION_FIELD_ORDERBY_SEC"
+                description="COM_CLUBORGANISATION_FIELD_ORDERBY_SEC_DESC"
+                default="firstname"
+                >
+                <option value="">COM_CLUBORGANISATION_ORDERBY_NONE</option>
+                <option value="member_no">COM_CLUBORGANISATION_ORDERBY_MEMBER_NO</option>
+                <option value="lastname">COM_CLUBORGANISATION_ORDERBY_LASTNAME</option>
+                <option value="firstname">COM_CLUBORGANISATION_ORDERBY_FIRSTNAME</option>
+                <option value="city">COM_CLUBORGANISATION_ORDERBY_CITY</option>
+                <option value="zip">COM_CLUBORGANISATION_ORDERBY_ZIP</option>
+                <option value="birthday">COM_CLUBORGANISATION_ORDERBY_BIRTHDAY</option>
+                <option value="membership_type">COM_CLUBORGANISATION_ORDERBY_MEMBERSHIP_TYPE</option>
+                <option value="membership_begin">COM_CLUBORGANISATION_ORDERBY_MEMBERSHIP_BEGIN</option>
+                <option value="first_membership">COM_CLUBORGANISATION_ORDERBY_FIRST_MEMBERSHIP</option>
+                <option value="entry_year">COM_CLUBORGANISATION_ORDERBY_ENTRY_YEAR</option>
+                <option value="exit_year">COM_CLUBORGANISATION_ORDERBY_EXIT_YEAR</option>
+            </field>
+        </fieldset>
+    </fields>
+</metadata>

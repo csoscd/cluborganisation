@@ -1,0 +1,27 @@
+<?php
+namespace CSOSCD\Component\ClubOrganisation\Administrator\Model;
+defined('_JEXEC') or die;
+use Joomla\CMS\MVC\Model\AdminModel;
+
+class SalutationModel extends AdminModel
+{
+    public function getForm($data = [], $loadData = true)
+    {
+        $form = $this->loadForm(
+            'com_cluborganisation.salutation',
+            'salutation',
+            ['control' => 'jform', 'load_data' => $loadData]
+        );
+        return $form ?: false;
+    }
+
+    protected function loadFormData()
+    {
+        return $this->getItem();
+    }
+
+    public function getTable($type = 'Salutation', $prefix = 'CSOSCD\\Component\\ClubOrganisation\\Administrator\\Table\\', $config = [])
+    {
+        return parent::getTable($type, $prefix, $config);
+    }
+}

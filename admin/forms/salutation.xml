@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<form>
+    <fieldset name="details">
+        <field name="id" type="hidden" />
+        <field name="title" type="text" label="COM_CLUBORGANISATION_FIELD_TITLE" 
+               required="true" size="40" />
+        <field name="published" type="radio" label="COM_CLUBORGANISATION_FIELD_PUBLISHED" 
+               default="1" class="btn-group">
+            <option value="1">JYES</option>
+            <option value="0">JNO</option>
+        </field>
+        <field name="ordering" type="number" label="COM_CLUBORGANISATION_FIELD_ORDERING" 
+               default="0" />
+    </fieldset>
+</form>

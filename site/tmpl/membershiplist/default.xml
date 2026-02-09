@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<metadata>
+    <layout title="COM_CLUBORGANISATION_MEMBERSHIPLIST_VIEW_DEFAULT_TITLE">
+        <help
+            key="Menu_Item:_ClubOrganisation_Membershiplist" />
+        <message>
+            <![CDATA[COM_CLUBORGANISATION_MEMBERSHIPLIST_VIEW_DEFAULT_DESC]]>
+        </message>
+    </layout>
+
+    <!-- Add fields for menu item parameters if needed -->
+    <fields name="request">
+        <fieldset name="request">
+            <field
+                name="id"
+                type="hidden"
+                default="0"
+            />
+        </fieldset>
+    </fields>
+
+    <fields name="params">
+        <fieldset name="basic" label="JGLOBAL_FIELDSET_DISPLAY_OPTIONS">
+            <field
+                name="show_page_heading"
+                type="list"
+                label="JGLOBAL_SHOW_PAGE_HEADING_LABEL"
+                default="1"
+                >
+                <option value="0">JHIDE</option>
+                <option value="1">JSHOW</option>
+            </field>
+
+            <field
+                name="page_heading"
+                type="text"
+                label="JGLOBAL_PAGE_HEADING_LABEL"
+                showon="show_page_heading:1"
+            />
+
+            <field
+                name="show_intro"
+                type="list"
+                label="COM_CLUBORGANISATION_FIELD_SHOW_INTRO_LABEL"
+                description="COM_CLUBORGANISATION_FIELD_SHOW_INTRO_DESC"
+                default="1"
+                >
+                <option value="0">JHIDE</option>
+                <option value="1">JSHOW</option>
+            </field>
+        </fieldset>
+    </fields>
+</metadata>
