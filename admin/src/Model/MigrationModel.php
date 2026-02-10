@@ -120,12 +120,13 @@ class MigrationModel extends BaseDatabaseModel
 
     /**
      * Convert username or user ID to valid user ID
-     * Returns NULL if user not found or invalid
+     * Returns current user ID if user not found (fallback)
      */
     protected function getUserId($value)
     {
+        // If empty, use current user as fallback
         if (empty($value)) {
-            return null;
+            return Factory::getApplication()->getIdentity()->id;
         }
         
         // If it's already a valid integer, use it
@@ -143,9 +144,11 @@ class MigrationModel extends BaseDatabaseModel
         $db->setQuery($query);
         try {
             $userId = $db->loadResult();
-            return $userId ? (int)$userId : null;
+            // If user not found, use current user as fallback
+            return $userId ? (int)$userId : Factory::getApplication()->getIdentity()->id;
         } catch (\Exception $e) {
-            return null;
+            // On error, use current user as fallback
+            return Factory::getApplication()->getIdentity()->id;
         }
     }
 
@@ -262,9 +265,9 @@ class MigrationModel extends BaseDatabaseModel
                         $person->birthday ? $db->quote($person->birthday) : 'NULL',
                         $person->deceased ? $db->quote($person->deceased) : 'NULL',
                         $db->quote($person->custom1),
-                        $createdBy ? $db->quote($createdBy) : 'NULL',
+                        $db->quote($createdBy),  // Always has value (fallback to current user)
                         $person->createddate ? $db->quote($person->createddate) : 'NULL',
-                        $modifiedBy ? $db->quote($modifiedBy) : 'NULL',
+                        $db->quote($modifiedBy),  // Always has value (fallback to current user)
                         $person->modifieddate ? $db->quote($person->modifieddate) : 'NULL',
                         '1'
                     ]));
@@ -322,9 +325,9 @@ class MigrationModel extends BaseDatabaseModel
                         $db->quote($membership->begin),
                         $membership->end ? $db->quote($membership->end) : 'NULL',
                         $db->quote($membership->catid),
-                        $createdBy ? $db->quote($createdBy) : 'NULL',
+                        $db->quote($createdBy),  // Always has value (fallback to current user)
                         $membership->createddate ? $db->quote($membership->createddate) : 'NULL',
-                        $modifiedBy ? $db->quote($modifiedBy) : 'NULL',
+                        $db->quote($modifiedBy),  // Always has value (fallback to current user)
                         $membership->modifieddate ? $db->quote($membership->modifieddate) : 'NULL'
                     ]));
                 
