@@ -10,6 +10,22 @@ use Joomla\CMS\Component\ComponentHelper;
 class DsgvocleanupModel extends ListModel
 {
     /**
+     * Constructor.
+     */
+    public function __construct($config = [])
+    {
+        parent::__construct($config);
+    }
+
+    /**
+     * Method to auto-populate the model state.
+     */
+    protected function populateState($ordering = 'last_membership_end', $direction = 'ASC')
+    {
+        parent::populateState($ordering, $direction);
+    }
+
+    /**
      * Get persons with ended memberships older than configured years
      */
     public function getItems()
@@ -27,8 +43,14 @@ class DsgvocleanupModel extends ListModel
         $subQuery = $db->getQuery(true);
         $subQuery->select('MAX(m2.end)')
             ->from($db->quoteName('#__cluborganisation_memberships', 'm2'))
-            ->where('m2.person_id = p.id')
-            ->where('m2.end IS NOT NULL');
+            ->where('m2.person_id = p.id');
+        
+        // Subquery to check if person has any active membership
+        $activeSubQuery = $db->getQuery(true);
+        $activeSubQuery->select('COUNT(*)')
+            ->from($db->quoteName('#__cluborganisation_memberships', 'm3'))
+            ->where('m3.person_id = p.id')
+            ->where('m3.end IS NULL');
         
         $query->select([
             'p.id',
@@ -37,8 +59,11 @@ class DsgvocleanupModel extends ListModel
             '(' . $subQuery . ') AS last_membership_end'
         ])
         ->from($db->quoteName('#__cluborganisation_persons', 'p'))
-        ->where('(' . $subQuery . ') IS NOT NULL')
-        ->where('(' . $subQuery . ') < ' . $db->quote($cutoffDate))
+        ->where('(' . $subQuery . ') IS NOT NULL')  // Has at least one ended membership
+        ->where('(' . $activeSubQuery . ') = 0')    // Has NO active memberships
+        ->where('(' . $subQuery . ') < ' . $db->quote($cutoffDate))  // Last membership ended before cutoff
+        ->where($db->quoteName('p.firstname') . ' != ' . $db->quote('Anonymisiert'))  // NOT already anonymized
+        ->where($db->quoteName('p.email') . ' NOT LIKE ' . $db->quote('anonymisiert_%@deleted.local'))  // NOT already anonymized
         ->order('last_membership_end ASC');
         
         $db->setQuery($query);
@@ -92,6 +117,7 @@ class DsgvocleanupModel extends ListModel
                     ->set($db->quoteName('birthday') . ' = ' . $db->quote('1970-01-01'))
                     ->set($db->quoteName('deceased') . ' = CASE WHEN ' . $db->quoteName('deceased') . ' IS NOT NULL THEN ' . $db->quote('1970-01-01') . ' ELSE NULL END')
                     ->set($db->quoteName('image') . ' = ' . $db->quote(''))
+                    ->set($db->quoteName('active') . ' = 0')  // Set person as inactive
                     ->set($db->quoteName('modified') . ' = ' . $db->quote(date('Y-m-d H:i:s')))
                     ->set($db->quoteName('modified_by') . ' = ' . $db->quote(Factory::getApplication()->getIdentity()->id))
                     ->where($db->quoteName('id') . ' = ' . $db->quote($personId));

@@ -8,9 +8,6 @@ use Joomla\CMS\Router\Route;
 $wa = $this->document->getWebAssetManager();
 $wa->useScript('table.columns');
 $wa->useScript('multiselect');
-
-$listOrder = $this->escape($this->state->get('list.ordering', 'last_membership_end'));
-$listDirn  = $this->escape($this->state->get('list.direction', 'ASC'));
 ?>
 
 <form action="<?php echo Route::_('index.php?option=com_cluborganisation&view=dsgvocleanup'); ?>" method="post" name="adminForm" id="adminForm">
