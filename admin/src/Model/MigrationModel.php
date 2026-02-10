@@ -119,6 +119,37 @@ class MigrationModel extends BaseDatabaseModel
     }
 
     /**
+     * Convert username or user ID to valid user ID
+     * Returns NULL if user not found or invalid
+     */
+    protected function getUserId($value)
+    {
+        if (empty($value)) {
+            return null;
+        }
+        
+        // If it's already a valid integer, use it
+        if (is_numeric($value) && (int)$value > 0) {
+            return (int)$value;
+        }
+        
+        // Try to find user by username
+        $db = $this->getDatabase();
+        $query = $db->getQuery(true);
+        $query->select($db->quoteName('id'))
+            ->from($db->quoteName('#__users'))
+            ->where($db->quoteName('username') . ' = ' . $db->quote($value));
+        
+        $db->setQuery($query);
+        try {
+            $userId = $db->loadResult();
+            return $userId ? (int)$userId : null;
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
+
+    /**
      * Perform the actual migration
      */
     public function performMigration($truncate = false, $salutationMappings = [], $typeMappings = [])
@@ -183,6 +214,10 @@ class MigrationModel extends BaseDatabaseModel
             foreach ($sourcePersons as $person) {
                 $salutationId = isset($salutationMap[$person->salutation]) ? $salutationMap[$person->salutation] : null;
                 
+                // Convert created_by and modified_by to user IDs
+                $createdBy = $this->getUserId($person->createdby);
+                $modifiedBy = $this->getUserId($person->modifiedby);
+                
                 $query = $db->getQuery(true);
                 $query->insert($db->quoteName('#__cluborganisation_persons'))
                     ->columns([
@@ -227,9 +262,9 @@ class MigrationModel extends BaseDatabaseModel
                         $person->birthday ? $db->quote($person->birthday) : 'NULL',
                         $person->deceased ? $db->quote($person->deceased) : 'NULL',
                         $db->quote($person->custom1),
-                        $db->quote($person->createdby),
+                        $createdBy ? $db->quote($createdBy) : 'NULL',
                         $person->createddate ? $db->quote($person->createddate) : 'NULL',
-                        $db->quote($person->modifiedby),
+                        $modifiedBy ? $db->quote($modifiedBy) : 'NULL',
                         $person->modifieddate ? $db->quote($person->modifieddate) : 'NULL',
                         '1'
                     ]));
@@ -264,6 +299,10 @@ class MigrationModel extends BaseDatabaseModel
                 
                 $newPersonId = $personIdMap[$membership->person_id];
                 
+                // Convert created_by and modified_by to user IDs
+                $createdBy = $this->getUserId($membership->createdby);
+                $modifiedBy = $this->getUserId($membership->modifiedby);
+                
                 $query = $db->getQuery(true);
                 $query->insert($db->quoteName('#__cluborganisation_memberships'))
                     ->columns([
@@ -283,9 +322,9 @@ class MigrationModel extends BaseDatabaseModel
                         $db->quote($membership->begin),
                         $membership->end ? $db->quote($membership->end) : 'NULL',
                         $db->quote($membership->catid),
-                        $db->quote($membership->createdby),
+                        $createdBy ? $db->quote($createdBy) : 'NULL',
                         $membership->createddate ? $db->quote($membership->createddate) : 'NULL',
-                        $db->quote($membership->modifiedby),
+                        $modifiedBy ? $db->quote($modifiedBy) : 'NULL',
                         $membership->modifieddate ? $db->quote($membership->modifieddate) : 'NULL'
                     ]));
                 
