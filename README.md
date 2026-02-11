@@ -17,6 +17,8 @@ Vollständige Joomla-Komponente zur Verwaltung von Vereinsmitgliedschaften mit:
 ✅ **ACL-Integration** - Vollständige Berechtigungsverwaltung  
 ✅ **Joomla 5/6 kompatibel** - Moderne Architektur  
 
+Inspiriert wurde das Projekt von https://github.com/momo10216/clubmgnt. Da dort aber keinerlei Aktivitäten mehr zu verzeichnen waren, habe ich mich für eine neue Entwicklung entschieden.
+
 ---
 
 ## ✨ Features
@@ -174,13 +176,6 @@ CSOSCD\Component\ClubOrganisation\[Administrator|Site]\[Type]
 
 ---
 
-## 📞 Support
-
-**E-Mail:** technik@meinetechnikwelt.rocks  
-**Dokumentation:** Siehe INSTALLATION.md  
-
----
-
 ## ⚙️ Konfiguration
 
 Nach der Installation:
@@ -205,6 +200,14 @@ Bei Updates:
 ## 📄 Lizenz
 
 GNU General Public License version 3 or later
+
+---
+
+## Unterstützung / Contribute
+
+Wenn dir das Projekt gefällt:
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/O5O21U13R9)
 
 ---
 
