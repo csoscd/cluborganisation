@@ -1,9 +1,8 @@
 # ClubOrganisation - Joomla 5/6 Komponente
 
-**Autor:** Christian Schulz  
-**E-Mail:** technik@meinetechnikwelt.rocks  
+**Autor:** csoscd  
 **Version:** 1.0.0  
-**Lizenz:** GNU GPL v2+  
+**Lizenz:** GPLv3
 
 ---
 
@@ -205,9 +204,7 @@ Bei Updates:
 
 ## 📄 Lizenz
 
-GNU General Public License version 2 or later
-
-Copyright (C) 2026 Christian Schulz. All rights reserved.
+GNU General Public License version 3 or later
 
 ---
 
