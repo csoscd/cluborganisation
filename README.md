@@ -1,6 +1,6 @@
 # ClubOrganisation - Joomla 5/6 Komponente
 
-**Version:** 1.1.0  
+**Version:** 1.2.0  
 **Lizenz:** GPLv3 (siehe LICENSE Datei)
 
 ---
@@ -473,6 +473,6 @@ Wenn dir das Projekt gefällt:
 
 **Viel Erfolg mit ClubOrganisation! 🎉**
 
-**Version:** 1.1.0  
+**Version:** 1.2.0  
 **Stand:** Februar 2026  
 **Produktionsbereit:** ✅
