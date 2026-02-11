@@ -20,24 +20,6 @@ Vollständige Joomla-Komponente zur Verwaltung von Vereinsmitgliedschaften mit:
 
 ---
 
-## 🚀 Schnell-Installation
-
-```bash
-chmod +x auto_install.sh
-sudo ./auto_install.sh
-```
-
-Das erstellt automatisch:
-- Vollständige Verzeichnisstruktur
-- Alle PHP-Klassen (Views, Models, Controller, Tables)
-- Alle Templates
-- ACL-Konfiguration
-- Installierbares ZIP-Paket
-
-Dann in Joomla: **System** → **Installieren** → **Erweiterungen** → ZIP hochladen
-
----
-
 ## ✨ Features
 
 ### Administrator-Bereich
