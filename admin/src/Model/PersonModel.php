@@ -72,9 +72,92 @@ class PersonModel extends AdminModel
 
         if (empty($data)) {
             $data = $this->getItem();
+            
+            // Automatische Mitgliedsnummern-Vergabe für neue Personen
+            if (empty($data->id)) {
+                $memberNo = $this->generateMemberNumber();
+                if ($memberNo !== null) {
+                    $data->member_no = $memberNo;
+                }
+            }
         }
 
         return $data;
+    }
+
+    /**
+     * Generiert die nächste Mitgliedsnummer basierend auf dem konfigurierten Pattern
+     *
+     * @return  string|null  Die generierte Mitgliedsnummer oder null wenn deaktiviert
+     *
+     * @since   1.2.0
+     */
+    protected function generateMemberNumber()
+    {
+        $params = \Joomla\CMS\Component\ComponentHelper::getParams('com_cluborganisation');
+        
+        // Prüfe ob automatische Vergabe aktiviert ist
+        if (!$params->get('auto_generate_member_no', 0)) {
+            return null;
+        }
+        
+        $pattern = $params->get('member_no_pattern', '[No]');
+        
+        // Wenn kein [No] im Pattern, dann Pattern direkt zurückgeben
+        if (strpos($pattern, '[No]') === false) {
+            return $pattern;
+        }
+        
+        // Extrahiere Präfix und Suffix aus dem Pattern
+        $parts = explode('[No]', $pattern);
+        $prefix = $parts[0] ?? '';
+        $suffix = $parts[1] ?? '';
+        
+        // Finde die höchste existierende Nummer mit diesem Pattern
+        $db = $this->getDbo();
+        $query = $db->getQuery(true);
+        
+        // Baue REGEX für MySQL - escaped für REGEXP
+        $prefixEscaped = preg_quote($prefix, '/');
+        $suffixEscaped = preg_quote($suffix, '/');
+        $regexPattern = '^' . $prefixEscaped . '([0-9]+)' . $suffixEscaped . '$';
+        
+        $query->select('member_no')
+            ->from($db->quoteName('#__cluborganisation_persons'))
+            ->where($db->quoteName('member_no') . ' REGEXP ' . $db->quote($regexPattern))
+            ->order($db->quoteName('member_no') . ' DESC');
+        
+        $db->setQuery($query);
+        $existingNumbers = $db->loadColumn();
+        
+        $maxNumber = 0;
+        
+        // Extrahiere Nummern aus den gefundenen Mitgliedsnummern
+        foreach ($existingNumbers as $memberNo) {
+            // Entferne Präfix und Suffix und extrahiere die Nummer
+            if (strlen($prefix) > 0) {
+                $memberNo = substr($memberNo, strlen($prefix));
+            }
+            if (strlen($suffix) > 0 && strlen($memberNo) >= strlen($suffix)) {
+                $memberNo = substr($memberNo, 0, -strlen($suffix));
+            }
+            
+            // Prüfe ob es eine Nummer ist
+            if (is_numeric($memberNo)) {
+                $number = (int)$memberNo;
+                if ($number > $maxNumber) {
+                    $maxNumber = $number;
+                }
+            }
+        }
+        
+        // Generiere die nächste Nummer
+        $nextNumber = $maxNumber + 1;
+        
+        // Baue die neue Mitgliedsnummer
+        $newMemberNo = $prefix . $nextNumber . $suffix;
+        
+        return $newMemberNo;
     }
 
     /**
