@@ -2,6 +2,7 @@
 defined('_JEXEC') or die;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
+use Joomla\CMS\Router\Route;
 
 // Get menu parameters
 $params = $this->params;
@@ -10,6 +11,8 @@ $params = $this->params;
 <div class="cluborganisation-activemembers">
     <h1><?php echo Text::_('COM_CLUBORGANISATION_ACTIVE_MEMBERS'); ?></h1>
 
+    <form action="<?php echo htmlspecialchars(\Joomla\CMS\Uri\Uri::getInstance()->toString()); ?>" method="post" name="adminForm" id="adminForm">
+    
     <?php if (empty($this->items)) : ?>
         <div class="alert alert-info">
             <?php echo Text::_('COM_CLUBORGANISATION_NO_MEMBERS'); ?>
@@ -132,4 +135,9 @@ $params = $this->params;
 
         <?php echo $this->pagination->getListFooter(); ?>
     <?php endif; ?>
+    
+    <input type="hidden" name="task" value="" />
+    <input type="hidden" name="limitstart" value="" />
+    <?php echo HTMLHelper::_('form.token'); ?>
+    </form>
 </div>

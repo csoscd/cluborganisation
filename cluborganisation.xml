@@ -39,6 +39,7 @@
             <menu link="option=com_cluborganisation&amp;view=salutations">COM_CLUBORGANISATION_MENU_SALUTATIONS</menu>
             <menu link="option=com_cluborganisation&amp;view=membershiptypes">COM_CLUBORGANISATION_MENU_MEMBERSHIPTYPES</menu>
             <menu link="option=com_cluborganisation&amp;view=migration">COM_CLUBORGANISATION_MENU_MIGRATION</menu>
+            <menu link="option=com_cluborganisation&amp;view=dsgvocleanup">COM_CLUBORGANISATION_MENU_DSGVO_CLEANUP</menu>
         </submenu>
 
         <files folder="admin">

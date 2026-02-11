@@ -5,6 +5,32 @@ use Joomla\CMS\MVC\Model\ListModel;
 
 class ActivemembersModel extends ListModel
 {
+    /**
+     * Method to auto-populate the model state.
+     */
+    protected function populateState($ordering = null, $direction = null)
+    {
+        // Get the application
+        $app = \Joomla\CMS\Factory::getApplication();
+        
+        // Load the parameters
+        $params = $app->getParams();
+        $this->setState('params', $params);
+        
+        // List state information
+        $limit = $app->getUserStateFromRequest('global.list.limit', 'limit', $params->get('display_num', 20), 'uint');
+        $this->setState('list.limit', $limit);
+        
+        $limitstart = $app->input->get('limitstart', 0, 'uint');
+        $this->setState('list.start', $limitstart);
+        
+        // Optional ordering from params
+        $this->setState('list.ordering', $params->get('orderby_pri', 'lastname'));
+        $this->setState('list.direction', $params->get('order_dir', 'ASC'));
+        
+        parent::populateState($ordering, $direction);
+    }
+
     protected function getListQuery()
     {
         $db = $this->getDatabase();

@@ -5,6 +5,32 @@ use Joomla\CMS\MVC\Model\ListModel;
 
 class MembermovementsModel extends ListModel
 {
+    /**
+     * Method to auto-populate the model state.
+     */
+    protected function populateState($ordering = null, $direction = null)
+    {
+        // Get the application
+        $app = \Joomla\CMS\Factory::getApplication();
+        
+        // Load the parameters
+        $params = $app->getParams();
+        $this->setState('params', $params);
+        
+        // List state information
+        $limit = $app->getUserStateFromRequest('global.list.limit', 'limit', $params->get('display_num', 20), 'uint');
+        $this->setState('list.limit', $limit);
+        
+        $limitstart = $app->input->get('limitstart', 0, 'uint');
+        $this->setState('list.start', $limitstart);
+        
+        // Optional ordering from params
+        $this->setState('list.ordering', $params->get('orderby_pri', 'entry_year'));
+        $this->setState('list.direction', $params->get('order_dir', 'DESC'));
+        
+        parent::populateState($ordering, $direction);
+    }
+
     protected function getListQuery()
     {
         $db = $this->getDatabase();
@@ -49,11 +75,21 @@ class MembermovementsModel extends ListModel
                 ->where('YEAR((' . $subQueryFirst . ')) = ' . $db->quote($selectedYear));
         } else {
             // Exits: Show persons whose latest membership end year = selected year
+            // AND who have NO active membership
+            
+            // Subquery to check if person has any active membership
+            $activeSubQuery = $db->getQuery(true);
+            $activeSubQuery->select('COUNT(*)')
+                ->from($db->quoteName('#__cluborganisation_memberships', 'm4'))
+                ->where($db->quoteName('m4.person_id') . ' = ' . $db->quoteName('p.id'))
+                ->where($db->quoteName('m4.end') . ' IS NULL');
+            
             // Join with the membership that has the latest end date
             $query->join('LEFT', $db->quoteName('#__cluborganisation_memberships', 'a') . ' ON a.person_id = p.id AND a.end = (' . $subQueryLast . ')')
                 ->join('LEFT', $db->quoteName('#__cluborganisation_membershiptypes', 't') . ' ON t.id = a.type')
                 ->where('YEAR((' . $subQueryLast . ')) = ' . $db->quote($selectedYear))
-                ->where('(' . $subQueryLast . ') IS NOT NULL');
+                ->where('(' . $subQueryLast . ') IS NOT NULL')
+                ->where('(' . $activeSubQuery . ') = 0');  // NO active memberships
         }
 
         // Build ORDER BY clause

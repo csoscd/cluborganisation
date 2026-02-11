@@ -15,6 +15,8 @@ $titleKey = $movementType === 'entries' ? 'COM_CLUBORGANISATION_ENTRIES' : 'COM_
 <div class="cluborganisation-membermovements">
     <h1><?php echo Text::_($titleKey) . ' ' . $selectedYear; ?></h1>
 
+    <form action="<?php echo htmlspecialchars(\Joomla\CMS\Uri\Uri::getInstance()->toString()); ?>" method="post" name="adminForm" id="adminForm">
+    
     <?php if (empty($this->items)) : ?>
         <div class="alert alert-info">
             <?php echo $movementType === 'entries' 
@@ -139,4 +141,9 @@ $titleKey = $movementType === 'entries' ? 'COM_CLUBORGANISATION_ENTRIES' : 'COM_
 
         <?php echo $this->pagination->getListFooter(); ?>
     <?php endif; ?>
+    
+    <input type="hidden" name="task" value="" />
+    <input type="hidden" name="limitstart" value="" />
+    <?php echo HTMLHelper::_('form.token'); ?>
+    </form>
 </div>

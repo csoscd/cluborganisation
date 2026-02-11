@@ -12,6 +12,17 @@
             description="COM_CLUBORGANISATION_CONFIG_ENCRYPTION_KEY_DESC"
             autocomplete="off"
         />
+        
+        <field
+            name="dsgvo_years_threshold"
+            type="number"
+            label="COM_CLUBORGANISATION_CONFIG_DSGVO_YEARS_LABEL"
+            description="COM_CLUBORGANISATION_CONFIG_DSGVO_YEARS_DESC"
+            default="3"
+            min="1"
+            max="20"
+            step="1"
+        />
     </fieldset>
 
     <fieldset
