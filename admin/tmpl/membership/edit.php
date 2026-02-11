@@ -25,6 +25,7 @@ HTMLHelper::_('behavior.keepalive');
                         </div>
                     </div>
                     
+                    <?php echo $this->form->renderField('comment'); ?>
                     <?php echo $this->form->renderField('catid'); ?>
                 </div>
             </div>

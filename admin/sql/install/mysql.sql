@@ -67,6 +67,7 @@ CREATE TABLE IF NOT EXISTS `#__cluborganisation_memberships` (
     `type` INT(11) UNSIGNED NOT NULL,
     `begin` DATE NOT NULL,
     `end` DATE DEFAULT NULL,
+    `comment` TEXT,
     `catid` INT(11) UNSIGNED,
     `checked_out` INT(11) UNSIGNED,
     `checked_out_time` DATETIME,
