@@ -1,6 +1,6 @@
 # ClubOrganisation - Technische Dokumentation
 
-**Version:** 1.0.0  
+**Version:** 1.1.0  
 **Joomla:** 5.x / 6.x  
 **PHP:** 8.1+
 
@@ -19,10 +19,10 @@ Request → Controller → Model → Database
 ```
 
 **Komponenten:**
-- **Model:** Geschäftslogik, Datenzugriff
-- **View:** Daten für Template vorbereiten
-- **Controller:** Request-Steuerung, Aktionen
-- **Template:** HTML-Ausgabe
+- **Model:** Geschäftslogik, Datenzugriff, Validierung
+- **View:** Daten für Template vorbereiten, State setzen
+- **Controller:** Request-Steuerung, Aktionen, Redirects
+- **Template:** HTML-Ausgabe, Formulare, Listen
 
 ### Dependency Injection
 
@@ -64,6 +64,7 @@ CSOSCD\Component\ClubOrganisation\
 │   └── View\
 └── Site\                   # Frontend
     ├── Controller\
+    ├── Extension\
     ├── Model\
     └── View\
 ```
@@ -108,6 +109,8 @@ PRIMARY KEY (id)
 UNIQUE KEY member_no (member_no)
 KEY user_id (user_id)
 KEY active (active)
+KEY entry_year (entry_year)
+KEY exit_year (exit_year)
 ```
 
 #### 2. memberships
@@ -260,7 +263,7 @@ $query->select('COUNT(*)')
          $db->quoteName('begin') . ' <= ' . $db->quote($end) . ')' .
     ')');
 
-if ($db->loadResult() > 0) {
+if ($db->setQuery($query)->loadResult() > 0) {
     throw new \Exception('Membership period overlaps');
 }
 ```
@@ -330,32 +333,36 @@ if (!$user->authorise('core.edit', 'com_cluborganisation.person.' . $id)) {
 ```
 1. Request: index.php?option=com_cluborganisation&view=person&id=123
 
-2. Router → DisplayController → dispatch()
+2. Controller:
+   - PersonController::edit()
+   - Prüft ACL (core.edit)
+   - Lädt Model
 
-3. PersonController::edit()
-   ├─ Check ACL (core.edit)
-   ├─ PersonModel::getItem($id)
-   │  ├─ PersonTable::load($id)
-   │  └─ Return $item
-   └─ PersonView::display()
-      ├─ Load Form (person.xml)
-      ├─ Bind Data
-      └─ Render Template (edit.php)
+3. Model:
+   - PersonModel::getItem(123)
+   - Lädt Datensatz aus DB
+   - Füllt Form-Data
 
-4. Template generiert HTML-Formular
+4. View:
+   - PersonHtmlView::display()
+   - Rendert Formular
+   - Lädt Template
 
-5. Submit → PersonController::save()
-   ├─ Check Token (CSRF)
-   ├─ Check ACL (core.edit)
-   ├─ PersonModel::validate($data)
-   │  ├─ Check email format
-   │  ├─ Check member_no unique
-   │  └─ Custom validations
-   ├─ PersonTable::bind($data)
-   ├─ PersonTable::check()
-   ├─ PersonTable::store()
-   │  └─ INSERT/UPDATE SQL
-   └─ Redirect mit Message
+5. Template:
+   - person/edit.php
+   - Zeigt Formular an
+   - CSRF Token
+
+6. POST (Speichern):
+   - PersonController::save()
+   - Prüft Token
+   - Validiert Daten
+   - PersonModel::save()
+   - Redirect zur Liste
+
+7. Response:
+   - Success Message
+   - Redirect zu Persons-Liste
 ```
 
 ### Frontend: Aktive Mitglieder
@@ -363,197 +370,32 @@ if (!$user->authorise('core.edit', 'com_cluborganisation.person.' . $id)) {
 ```
 1. Request: index.php?option=com_cluborganisation&view=activemembers
 
-2. Router → DisplayController → dispatch()
+2. Controller:
+   - DisplayController::display()
+   - Routing zu View
 
-3. ActivemembersModel::getItems()
-   ├─ populateState()
-   │  ├─ Limit aus Request/Session lesen
-   │  └─ Set state values
-   ├─ getListQuery()
-   │  ├─ Build SELECT mit Subqueries
-   │  │  ├─ Entry Year: MIN(begin)
-   │  │  ├─ Exit Year: MAX(end)
-   │  │  └─ Active check: COUNT WHERE end IS NULL
-   │  ├─ JOIN persons, memberships, salutations, types
-   │  ├─ WHERE conditions
-   │  │  ├─ begin <= TODAY
-   │  │  ├─ (end >= TODAY OR end IS NULL)
-   │  │  ├─ active = 1
-   │  │  └─ deceased IS NULL
-   │  └─ ORDER BY
-   └─ Return items[]
+3. Model:
+   - ActivemembersModel::getItems()
+   - populateState() - Limit, Ordering lesen
+   - getListQuery() - SQL Query bauen
+   - Subqueries für Entry/Exit Year
 
-4. ActivemembersView::display()
-   ├─ Get items from Model
-   ├─ Get pagination
-   ├─ Get params
-   └─ Render Template (default.php)
+4. View:
+   - ActivemembersHtmlView::display()
+   - Items laden
+   - Pagination vorbereiten
 
-5. Template generiert HTML-Tabelle
-   ├─ <form> Element (für Pagination)
-   ├─ Table mit Items
-   └─ Pagination-Footer
+5. Template:
+   - activemembers/default.php
+   - Tabelle rendern
+   - Spalten nach Params
+   - Pagination
+
+6. Response:
+   - HTML-Output
+   - Tabelle mit Mitgliedern
+   - Pagination-Controls
 ```
-
-### DSGVO: Anonymisierung
-
-```
-1. Request: task=dsgvocleanup.anonymize&cid[]=123
-
-2. DsgvocleanupController::anonymize()
-   ├─ Check Token (CSRF)
-   ├─ Check ACL (core.manage)
-   ├─ Get person IDs from Request
-   └─ DsgvocleanupModel::anonymizePersons($ids)
-      ├─ Start Transaction
-      ├─ Foreach person:
-      │  ├─ UPDATE persons SET
-      │  │  ├─ firstname = 'Anonymisiert'
-      │  │  ├─ lastname = 'Person [ID]'
-      │  │  ├─ email = 'anonymisiert_[ID]@...'
-      │  │  ├─ active = 0
-      │  │  └─ ... (alle Felder)
-      │  ├─ Get membership IDs
-      │  └─ DELETE membershipbanks
-      ├─ Commit Transaction
-      └─ Return success
-
-3. Redirect mit Success-Message
-   "X Personen wurden anonymisiert, Y Bankverbindungen gelöscht"
-```
-
----
-
-## 🎨 Template-System
-
-### Backend-Template (Liste)
-
-**Struktur:**
-```php
-<?php
-defined('_JEXEC') or die;
-use Joomla\CMS\HTML\HTMLHelper;
-use Joomla\CMS\Language\Text;
-
-// Sortierung aus State
-$listOrder = $this->escape($this->state->get('list.ordering', 'a.id'));
-$listDirn  = $this->escape($this->state->get('list.direction', 'ASC'));
-?>
-
-<form action="..." method="post" name="adminForm" id="adminForm">
-    
-    <!-- Toolbar -->
-    <div class="row">
-        <div class="col-md-12">
-            <?php // Toolbar wird im View hinzugefügt ?>
-        </div>
-    </div>
-    
-    <!-- Filter-Sidebar -->
-    <div class="row">
-        <div class="col-md-12">
-            <?php echo $this->filterForm; ?>
-        </div>
-    </div>
-    
-    <!-- Tabelle -->
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th width="1%">
-                    <?php echo HTMLHelper::_('grid.checkall'); ?>
-                </th>
-                <th width="5%">
-                    <?php echo HTMLHelper::_('searchtools.sort', 'JGRID_HEADING_ID', 'a.id', $listDirn, $listOrder); ?>
-                </th>
-                <!-- Weitere Spalten -->
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($this->items as $i => $item) : ?>
-                <tr>
-                    <td>
-                        <?php echo HTMLHelper::_('grid.id', $i, $item->id); ?>
-                    </td>
-                    <td>
-                        <a href="<?php echo $editLink; ?>">
-                            <?php echo $this->escape($item->title); ?>
-                        </a>
-                    </td>
-                    <!-- Weitere Zellen -->
-                </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
-    
-    <!-- Hidden Fields -->
-    <input type="hidden" name="task" value="" />
-    <input type="hidden" name="boxchecked" value="0" />
-    <?php echo HTMLHelper::_('form.token'); ?>
-</form>
-```
-
-### Frontend-Template (Liste)
-
-**Struktur mit Pagination:**
-```php
-<?php
-defined('_JEXEC') or die;
-use Joomla\CMS\HTML\HTMLHelper;
-use Joomla\CMS\Language\Text;
-
-$params = $this->params;
-?>
-
-<div class="cluborganisation-view">
-    <h1><?php echo Text::_('COM_CLUBORGANISATION_TITLE'); ?></h1>
-
-    <form action="<?php echo htmlspecialchars(\Joomla\CMS\Uri\Uri::getInstance()->toString()); ?>" 
-          method="post" 
-          name="adminForm" 
-          id="adminForm">
-    
-        <?php if (empty($this->items)) : ?>
-            <div class="alert alert-info">
-                <?php echo Text::_('COM_CLUBORGANISATION_NO_ITEMS'); ?>
-            </div>
-        <?php else : ?>
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <?php if ($params->get('show_member_no', 1)) : ?>
-                            <th><?php echo Text::_('COM_CLUBORGANISATION_FIELD_MEMBER_NO'); ?></th>
-                        <?php endif; ?>
-                        <!-- Weitere Spalten basierend auf Params -->
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($this->items as $item) : ?>
-                        <tr>
-                            <?php if ($params->get('show_member_no', 1)) : ?>
-                                <td><?php echo $this->escape($item->member_no); ?></td>
-                            <?php endif; ?>
-                            <!-- Weitere Zellen -->
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-
-            <?php echo $this->pagination->getListFooter(); ?>
-        <?php endif; ?>
-        
-        <input type="hidden" name="task" value="" />
-        <input type="hidden" name="limitstart" value="" />
-        <?php echo HTMLHelper::_('form.token'); ?>
-    </form>
-</div>
-```
-
-**Wichtig für Pagination:**
-- `<form>` Element umschließt Tabelle und Pagination
-- Hidden Fields: `task`, `limitstart`
-- CSRF Token
-- `populateState()` im Model
 
 ---
 
@@ -566,7 +408,7 @@ class MyModel extends ListModel
 {
     protected function populateState($ordering = null, $direction = null)
     {
-        $app = \Joomla\CMS\Factory::getApplication();
+        $app = Factory::getApplication();
         $params = $app->getParams();
         $this->setState('params', $params);
         
@@ -680,6 +522,156 @@ public function criticalOperation($data)
 }
 ```
 
+### Pattern 5: Custom Field Type
+
+```php
+class YearrangeField extends ListField
+{
+    protected $type = 'Yearrange';
+
+    protected function getOptions()
+    {
+        $options = [];
+        $currentYear = (int) date('Y');
+        $startYear = $currentYear - 50;
+        
+        for ($year = $currentYear; $year >= $startYear; $year--) {
+            $options[] = HTMLHelper::_('select.option', $year, $year);
+        }
+        
+        return array_merge(parent::getOptions(), $options);
+    }
+}
+```
+
+---
+
+## 📝 Template-Strukturen
+
+### Backend-Template (Liste)
+
+**Struktur mit Filter, Sortierung, Pagination:**
+```php
+<?php
+defined('_JEXEC') or die;
+use Joomla\CMS\HTML\HTMLHelper;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Router\Route;
+
+$listOrder = $this->escape($this->state->get('list.ordering'));
+$listDirn  = $this->escape($this->state->get('list.direction'));
+$saveOrder = $listOrder == 'a.ordering';
+?>
+
+<form action="<?php echo Route::_('index.php?option=com_cluborganisation&view=persons'); ?>" 
+      method="post" 
+      name="adminForm" 
+      id="adminForm">
+    
+    <!-- Filter -->
+    <?php echo $this->filterForm->renderField('search'); ?>
+    
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th width="1%">
+                    <?php echo HTMLHelper::_('grid.checkall'); ?>
+                </th>
+                <th>
+                    <?php echo HTMLHelper::_('searchtools.sort', 'JGRID_HEADING_ID', 'a.id', $listDirn, $listOrder); ?>
+                </th>
+                <!-- Weitere Spalten -->
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($this->items as $i => $item) : ?>
+                <tr>
+                    <td>
+                        <?php echo HTMLHelper::_('grid.id', $i, $item->id); ?>
+                    </td>
+                    <td>
+                        <a href="<?php echo $editLink; ?>">
+                            <?php echo $this->escape($item->title); ?>
+                        </a>
+                    </td>
+                    <!-- Weitere Zellen -->
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+    
+    <!-- Pagination -->
+    <?php echo $this->pagination->getListFooter(); ?>
+    
+    <!-- Hidden Fields -->
+    <input type="hidden" name="task" value="" />
+    <input type="hidden" name="boxchecked" value="0" />
+    <?php echo HTMLHelper::_('form.token'); ?>
+</form>
+```
+
+### Frontend-Template (Liste)
+
+**Struktur mit Pagination:**
+```php
+<?php
+defined('_JEXEC') or die;
+use Joomla\CMS\HTML\HTMLHelper;
+use Joomla\CMS\Language\Text;
+
+$params = $this->params;
+?>
+
+<div class="cluborganisation-view">
+    <h1><?php echo Text::_('COM_CLUBORGANISATION_TITLE'); ?></h1>
+
+    <form action="<?php echo htmlspecialchars(\Joomla\CMS\Uri\Uri::getInstance()->toString()); ?>" 
+          method="post" 
+          name="adminForm" 
+          id="adminForm">
+    
+        <?php if (empty($this->items)) : ?>
+            <div class="alert alert-info">
+                <?php echo Text::_('COM_CLUBORGANISATION_NO_ITEMS'); ?>
+            </div>
+        <?php else : ?>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <?php if ($params->get('show_member_no', 1)) : ?>
+                            <th><?php echo Text::_('COM_CLUBORGANISATION_FIELD_MEMBER_NO'); ?></th>
+                        <?php endif; ?>
+                        <!-- Weitere Spalten basierend auf Params -->
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($this->items as $item) : ?>
+                        <tr>
+                            <?php if ($params->get('show_member_no', 1)) : ?>
+                                <td><?php echo $this->escape($item->member_no); ?></td>
+                            <?php endif; ?>
+                            <!-- Weitere Zellen -->
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+
+            <?php echo $this->pagination->getListFooter(); ?>
+        <?php endif; ?>
+        
+        <input type="hidden" name="task" value="" />
+        <input type="hidden" name="limitstart" value="" />
+        <?php echo HTMLHelper::_('form.token'); ?>
+    </form>
+</div>
+```
+
+**Wichtig für Pagination:**
+- `<form>` Element umschließt Tabelle und Pagination
+- Hidden Fields: `task`, `limitstart`
+- CSRF Token
+- `populateState()` im Model
+
 ---
 
 ## 📝 Best Practices
@@ -734,63 +726,28 @@ try {
 }
 ```
 
----
+### 6. populateState() für ListModels
 
-## 🔬 Testing
+```php
+// Immer implementieren
+protected function populateState($ordering = null, $direction = null)
+{
+    // Params, Limit, Start, Ordering setzen
+    parent::populateState($ordering, $direction);
+}
+```
 
-### Manuelle Tests
+### 7. Subqueries statt JOINs
 
-**Checkliste Backend:**
-- [ ] Personen anlegen/bearbeiten/löschen
-- [ ] Mitgliedschaften mit Überschneidungsprüfung
-- [ ] Bankdaten verschlüsselt speichern/laden
-- [ ] Stammdaten pflegen
-- [ ] Migration durchführen
-- [ ] DSGVO Cleanup testen
-- [ ] Filter und Sortierung
-- [ ] Batch-Operationen
-- [ ] ACL-Berechtigungen
+```php
+// Bevorzugt für berechnete Werte
+$subQuery = $db->getQuery(true);
+$subQuery->select('COUNT(*)')...;
 
-**Checkliste Frontend:**
-- [ ] Aktive Mitglieder Liste
-- [ ] Pagination funktioniert
-- [ ] Spalten konfigurierbar
-- [ ] Sortierung korrekt
-- [ ] Eintritte/Austritte
-- [ ] Mein Profil
-- [ ] Meine Mitgliedschaften
-
-### SQL-Tests
-
-```sql
--- Test: Entry Year korrekt
-SELECT 
-    p.id,
-    p.member_no,
-    p.entry_year,
-    (SELECT YEAR(MIN(m.begin)) 
-     FROM #__cluborganisation_memberships m 
-     WHERE m.person_id = p.id) as calculated_entry_year
-FROM #__cluborganisation_persons p
-WHERE p.entry_year != (calculated_entry_year);
--- Sollte leer sein
-
--- Test: Aktive Mitgliedschaften eindeutig
-SELECT person_id, COUNT(*) as active_count
-FROM #__cluborganisation_memberships
-WHERE end IS NULL
-GROUP BY person_id
-HAVING active_count > 1;
--- Sollte leer sein
-
--- Test: Verschlüsselte Bankdaten
-SELECT id, LENGTH(iban) as iban_length
-FROM #__cluborganisation_membershipbanks
-WHERE iban IS NOT NULL;
--- Länge sollte > 27 sein (verschlüsselt)
+$query->select('(' . $subQuery . ') AS count');
 ```
 
 ---
 
 **Stand:** Februar 2026  
-**Version:** 1.0.0
+**Version:** 1.1.0

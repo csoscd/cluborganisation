@@ -1,6 +1,6 @@
 # ClubOrganisation - Feature-Übersicht
 
-**Version:** 1.0.0  
+**Version:** 1.1.0  
 **Joomla:** 5.x / 6.x
 
 ---
@@ -20,7 +20,7 @@ ClubOrganisation richtet sich an:
 ### 1. Personen-Verwaltung
 
 **Stammdaten erfassen:**
-- Anrede, Vor-/Nachname, Geburtsname
+- Anrede, Vor-/Nachname, Geburtsname, Zweitname
 - Geburtsdatum, Sterbedatum
 - Adresse (Straße, PLZ, Stadt, Land)
 - Kontakt (Telefon, Mobil, E-Mail)
@@ -670,4 +670,4 @@ tar -czf images_backup_$(date +%Y%m%d).tar.gz \
 ---
 
 **Stand:** Februar 2026  
-**Version:** 1.0.0
+**Version:** 1.1.0

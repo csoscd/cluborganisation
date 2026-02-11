@@ -52,6 +52,16 @@
         />
 
         <field
+            name="comment"
+            type="textarea"
+            label="COM_CLUBORGANISATION_FIELD_COMMENT"
+            description="COM_CLUBORGANISATION_FIELD_COMMENT_DESC"
+            class="inputbox"
+            rows="5"
+            cols="50"
+        />
+
+        <field
             name="catid"
             type="category"
             label="COM_CLUBORGANISATION_FIELD_CATEGORY"

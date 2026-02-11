@@ -1,6 +1,6 @@
 # ClubOrganisation - Projektstruktur
 
-**Version:** 1.0.0  
+**Version:** 1.1.0  
 **Joomla:** 5.x / 6.x
 
 ---
@@ -12,6 +12,7 @@ cluborganisation/
 ├── admin/                          # Backend (Administrator)
 │   ├── forms/                      # XML-Formulare
 │   │   ├── filter_persons.xml      # Filter für Personen-Liste
+│   │   ├── filter_memberships.xml  # Filter für Mitgliedschaften-Liste
 │   │   ├── membership.xml          # Mitgliedschaft bearbeiten
 │   │   ├── membershipbank.xml      # Bankverbindung bearbeiten
 │   │   ├── membershiptype.xml      # Mitgliedschaftstyp bearbeiten
@@ -30,8 +31,11 @@ cluborganisation/
 │   │   └── provider.php            # Service Provider
 │   │
 │   ├── sql/                        # Datenbank
-│   │   ├── install.mysql.utf8.sql  # Installation
-│   │   └── uninstall.mysql.utf8.sql # Deinstallation (leer)
+│   │   ├── install/
+│   │   │   └── mysql.sql           # Installation
+│   │   ├── uninstall/
+│   │   │   └── mysql.sql           # Deinstallation (leer)
+│   │   └── updates/                # Update-Scripts
 │   │
 │   ├── src/                        # PHP-Quellcode
 │   │   ├── Controller/             # Controller
@@ -132,7 +136,6 @@ cluborganisation/
 │   │       └── default.php                 # Anreden Liste
 │   │
 │   ├── access.xml                  # ACL-Konfiguration
-│   ├── cluborganisation.xml        # Component Manifest
 │   └── config.xml                  # Komponenten-Konfiguration
 │
 ├── site/                           # Frontend (Site)
@@ -144,9 +147,15 @@ cluborganisation/
 │   │       ├── en-GB.com_cluborganisation.ini      # Englische Übersetzungen
 │   │       └── en-GB.com_cluborganisation.sys.ini  # System-Übersetzungen
 │   │
+│   ├── services/                   # Service Provider
+│   │   └── provider.php            # Dependency Injection
+│   │
 │   ├── src/                        # PHP-Quellcode
 │   │   ├── Controller/
 │   │   │   └── DisplayController.php       # Frontend Controller
+│   │   │
+│   │   ├── Extension/
+│   │   │   └── ClubOrganisationComponent.php
 │   │   │
 │   │   ├── Model/                  # Models
 │   │   │   ├── ActivemembersModel.php      # Aktive Mitglieder
@@ -177,12 +186,19 @@ cluborganisation/
 │       └── myprofile/
 │           └── default.php                 # Profil-Ansicht
 │
+├── media/                          # Frontend-Ressourcen
+│   ├── css/
+│   │   └── cluborganisation.css    # Komponenten-Styles
+│   ├── js/
+│   │   └── cluborganisation.js     # JavaScript
+│   └── images/                     # Komponenten-Bilder
+│
 ├── doc/                            # Dokumentation (im Build)
 │   ├── PROJECT_STRUCTURE.md        # Diese Datei
 │   ├── PROJEKTDOKUMENTATION.md     # Technische Dokumentation
 │   └── UEBERSICHT.md              # Feature-Übersicht
 │
-├── auto_install.sh                 # Build-Script
+├── cluborganisation.xml            # Component Manifest
 ├── LICENSE                         # GPLv3 Lizenz
 └── README.md                       # Projekt-README
 ```
@@ -193,62 +209,76 @@ cluborganisation/
 
 ### Manifest & Konfiguration
 
-| Datei | Zweck |
-|-------|-------|
-| `cluborganisation.xml` | Component Manifest (Joomla Installation) |
-| `access.xml` | ACL-Berechtigungen definieren |
-| `config.xml` | Komponenten-Optionen |
+| Datei | Zweck | Ort |
+|-------|-------|-----|
+| `cluborganisation.xml` | Component Manifest (Joomla Installation) | Root |
+| `access.xml` | ACL-Berechtigungen definieren | admin/ |
+| `config.xml` | Komponenten-Optionen | admin/ |
 
 ### SQL-Dateien
 
-| Datei | Zweck |
-|-------|-------|
-| `install.mysql.utf8.sql` | Tabellen erstellen, Stammdaten |
-| `uninstall.mysql.utf8.sql` | Leer (Datenschutz - Tabellen bleiben) |
+| Datei | Zweck | Ort |
+|-------|-------|-----|
+| `mysql.sql` | Tabellen erstellen, Stammdaten | admin/sql/install/ |
+| `mysql.sql` | Leer (Datenschutz - Tabellen bleiben) | admin/sql/uninstall/ |
 
 ### PHP-Klassen
 
-#### Controller (15 Dateien)
+#### Controller (14 Dateien)
+**Backend (13):**
 - **Display:** Dashboard-Steuerung
 - **Liste + Edit:** Personen, Mitgliedschaften, Bankverbindungen, Anreden, Typen
 - **Spezial:** Migration, DSGVO Cleanup
 
+**Frontend (1):**
+- DisplayController: Frontend-Routing
+
 #### Models (17 Dateien)
-- **Listen-Models:** Laden Datensätze mit Filter/Sortierung
+**Backend (13):**
+- **Listen-Models:** Personen, Mitgliedschaften, Bankverbindungen, Anreden, Typen
 - **Admin-Models:** CRUD-Operationen, Validierung
-- **Spezial-Models:** Migration, DSGVO, Frontend-Views
+- **Spezial-Models:** Migration, DSGVO Cleanup
+
+**Frontend (4):**
+- Aktive Mitglieder, Eintritte/Austritte, Mein Profil, Mitgliedschaften
 
 #### Views (17 Dateien)
-- **Backend:** 13 Views (7 Listen, 5 Edit, Migration, DSGVO)
-- **Frontend:** 4 Views (Aktive, Bewegungen, Mein Profil, Mitgliedschaften)
+**Backend (13):** 
+- 7 Listen-Views, 5 Edit-Views, Migration, DSGVO Cleanup
+
+**Frontend (4):** 
+- Aktive Mitglieder, Eintritte/Austritte, Mein Profil, Mitgliedschaften
 
 #### Tables (5 Dateien)
 - ORM-Schicht für Datenbank-Zugriff
 - Validierung, Speichern, Löschen
+- Person, Membership, Membershipbank, Salutation, Membershiptype
 
-#### Helper (2 Dateien)
+#### Helper & Extension (3 Dateien)
 - **EncryptionHelper:** AES-256 Verschlüsselung
 - **YearrangeField:** Custom Field Type
+- **ClubOrganisationComponent:** Extension-Klasse
 
 ### Templates (17 Dateien)
 
-#### Backend-Templates
+#### Backend-Templates (13)
 - **Listen:** `default.php` (Tabellen-Ansicht)
 - **Edit:** `edit.php` (Formulare)
 - **Spezial:** Migration, DSGVO Cleanup
 
-#### Frontend-Templates
+#### Frontend-Templates (4)
 - **Listen:** Aktive Mitglieder, Eintritte/Austritte, Mitgliedschaften
 - **Detail:** Mein Profil
 
-### Formulare (12 XML-Dateien)
+### Formulare (10 XML-Dateien)
 
-#### Backend-Forms
+#### Backend-Forms (6)
 - **Edit-Forms:** Person, Mitgliedschaft, Bankverbindung, Anrede, Typ
-- **Filter-Forms:** Personen-Filter
+- **Filter-Forms:** Personen-Filter, Mitgliedschaften-Filter
 
-#### Frontend-Forms
-- **Menu Item Parameters:** 4 XML-Dateien für Spalten-Konfiguration
+#### Frontend-Forms (4)
+- **Menu Item Parameters:** XML-Dateien für Spalten-Konfiguration
+- Activemembers, Membermovements, Membershiplist, Myprofile
 
 ### Sprachdateien (8 Dateien)
 
@@ -259,8 +289,8 @@ cluborganisation/
 ```
 
 #### Inhalte
-- **`.ini`:** Formulare, Labels, Meldungen, Buttons
-- **`.sys.ini`:** Menu Item Types, Backend-Menü
+- **`.ini`:** Formulare, Labels, Meldungen, Buttons, Fehlermeldungen
+- **`.sys.ini`:** Menu Item Types, Backend-Menü, Komponenten-Beschreibung
 
 ---
 
@@ -277,17 +307,19 @@ cluborganisation/
 | **Tables** | 5 | - | 5 |
 | **Forms (XML)** | 6 | 4 | 10 |
 | **Helper** | 2 | - | 2 |
+| **Extension** | 1 | 1 | 2 |
 | **Sprachdateien** | 4 | 4 | 8 |
+| **Service Provider** | 1 | 1 | 2 |
 
 ### Zeilen-Code (ca.)
 
 | Typ | Zeilen | Anteil |
 |-----|--------|--------|
-| PHP | 8.000 | 60% |
-| XML | 2.500 | 19% |
+| PHP | 8.500 | 62% |
+| XML | 2.200 | 16% |
 | SQL | 800 | 6% |
-| Dokumentation | 2.000 | 15% |
-| **Gesamt** | **~13.300** | **100%** |
+| Dokumentation | 2.200 | 16% |
+| **Gesamt** | **~13.700** | **100%** |
 
 ---
 
@@ -307,6 +339,7 @@ cluborganisation/
 | Edit View | `Person/HtmlView.php` | Display-Formular |
 | Liste Template | `persons/default.php` | Tabelle |
 | Edit Template | `person/edit.php` | Formular |
+| Table | `PersonTable.php` | ORM-Klasse |
 
 ### Klassen
 
@@ -318,8 +351,10 @@ Beispiele:
 CSOSCD\Component\ClubOrganisation\Administrator\Controller\PersonsController
 CSOSCD\Component\ClubOrganisation\Administrator\Model\PersonsModel
 CSOSCD\Component\ClubOrganisation\Administrator\View\Persons\HtmlView
+CSOSCD\Component\ClubOrganisation\Administrator\Table\PersonTable
 
 // Frontend
+CSOSCD\Component\ClubOrganisation\Site\Controller\DisplayController
 CSOSCD\Component\ClubOrganisation\Site\Model\ActivemembersModel
 CSOSCD\Component\ClubOrganisation\Site\View\Activemembers\HtmlView
 ```
@@ -332,9 +367,25 @@ Beispiele:
 - `#__cluborganisation_persons`
 - `#__cluborganisation_memberships`
 - `#__cluborganisation_membershipbanks`
+- `#__cluborganisation_salutations`
+- `#__cluborganisation_membershiptypes`
 
 **Felder:** lowercase mit Unterstrichen
-- `member_no`, `entry_year`, `exit_year`
+- `member_no`, `entry_year`, `exit_year`, `user_id`
+- `firstname`, `lastname`, `birthname`, `middlename`
+- `begin`, `end`, `fee_amount`
+
+### Sprachkonstanten
+
+**Pattern:** `COM_CLUBORGANISATION_[VIEW]_[CONTEXT]_[NAME]`
+
+Beispiele:
+```ini
+COM_CLUBORGANISATION_PERSONS_TITLE="Personen"
+COM_CLUBORGANISATION_PERSON_FIELD_FIRSTNAME_LABEL="Vorname"
+COM_CLUBORGANISATION_MEMBERSHIPS_FILTER_SEARCH="Suchen"
+COM_CLUBORGANISATION_MENU_ACTIVEMEMBERS_TITLE="Aktive Mitglieder"
+```
 
 ---
 
@@ -343,26 +394,30 @@ Beispiele:
 ### Development
 
 ```bash
-# Entwicklungsverzeichnis
+# Entwicklungsverzeichnis (Quellcode)
 /opt/dev/cluborganisation/
 
 # Build-Output
-/opt/dev/cluborganisation/build/
+/opt/dev/cluborganisation/
+/opt/dev/com_cluborganisation_v1.0.0.zip
 
-# ZIP-Package
-/opt/dev/cluborganisation/build/cluborganisation_site_components_v1.0.0.zip
+# Auto-Install Script
+./auto_install.sh
 ```
 
 ### Joomla Installation
 
 ```bash
-# Backend
+# Backend-Komponente
 /var/www/html/administrator/components/com_cluborganisation/
 
-# Frontend
+# Frontend-Komponente
 /var/www/html/components/com_cluborganisation/
 
-# Media (Fotos)
+# Media-Dateien
+/var/www/html/media/com_cluborganisation/
+
+# Mitgliederfotos
 /var/www/html/images/cluborganisation/
 ```
 
@@ -384,32 +439,45 @@ Beispiele:
 ### auto_install.sh
 
 **Funktionen:**
-1. Cleanup alter Builds
-2. Verzeichnisstruktur erstellen
-3. Dateien kopieren (Controller, Models, Views, Templates)
-4. Sprachdateien kopieren
-5. SQL-Dateien kopieren
-6. Dokumentation kopieren (README, doc/)
-7. ZIP-Package erstellen
+1. Cleanup alter Builds (außer .git)
+2. Verzeichnisstruktur erstellen (admin/, site/, doc/, media/)
+3. Dateien kopieren (Controller, Models, Views, Templates, Tables, Helper)
+4. Sprachdateien kopieren (DE/EN, .ini/.sys.ini)
+5. SQL-Dateien kopieren (install/uninstall)
+6. Formulare kopieren (admin/site XML)
+7. Dokumentation kopieren (README, LICENSE, doc/)
+8. Index.html Schutz-Dateien erstellen
+9. ZIP-Package erstellen
 
-**Output:**
+**Ausführung:**
+```bash
+cd /opt/dev/cluborganisation
+./auto_install.sh
 ```
-build/
+
+**Output-Struktur:**
+```
+/opt/dev/cluborganisation/
 ├── admin/                  # Backend-Dateien
 ├── site/                   # Frontend-Dateien
+├── media/                  # Ressourcen
 ├── doc/                    # Dokumentation
 ├── README.md              # Projekt-README
-├── LICENSE                # Lizenz (falls vorhanden)
+├── LICENSE                # GPLv3 Lizenz
 └── cluborganisation.xml   # Manifest
+
+/opt/dev/com_cluborganisation_v1.0.0.zip
 ```
 
 **ZIP-Struktur:**
 ```
-cluborganisation_site_components_v1.0.0.zip
-├── admin/                 # Komplett
-├── site/                  # Komplett
+com_cluborganisation_v1.0.0.zip
+├── admin/                 # Komplett (src/, tmpl/, forms/, language/, sql/, services/)
+├── site/                  # Komplett (src/, tmpl/, language/, services/)
+├── media/                 # CSS, JS, Images
 ├── doc/                   # Dokumentation
 ├── README.md
+├── LICENSE
 └── cluborganisation.xml
 ```
 
@@ -419,33 +487,133 @@ cluborganisation_site_components_v1.0.0.zip
 
 ### Neue Dateien hinzufügen
 
-**In auto_install.sh:**
+**In auto_install.sh anpassen:**
 ```bash
-# Arrays erweitern
-MODELS=("..." "NewModel")
-CONTROLLERS=("..." "NewController")
-view_files=("..." "New/HtmlView.php")
-template_files=("..." "new/default.php")
+# Controller
+for ctrl in PersonsController ... NewController; do
+    [ -f "$CURRENT_DIR/${ctrl}.php" ] && cp ...
+done
+
+# Models
+for model in PersonsModel ... NewModel; do
+    [ -f "$CURRENT_DIR/${model}.php" ] && cp ...
+done
+
+# Views
+[ -f "$CURRENT_DIR/NewHtmlView.php" ] && cp ... "$BUILD_DIR/admin/src/View/New/HtmlView.php"
+
+# Templates
+[ -f "$CURRENT_DIR/new_default.php" ] && cp ... "$BUILD_DIR/admin/tmpl/new/default.php"
 ```
 
 ### Namenskonventionen beachten
 
-- **Groß-/Kleinschreibung:** Klassen PascalCase, Dateien lowercase
+- **Groß-/Kleinschreibung:** Klassen PascalCase, Verzeichnisse lowercase
 - **Plural/Singular:** Listen=Plural, Edit=Singular
-- **Verzeichnisse:** Lowercase mit Bindestrichen
+- **Verzeichnisse:** Lowercase für tmpl/, PascalCase für src/View/
+- **Dateien:** PascalCase für PHP-Klassen, lowercase für Templates
 
 ### Sprachdateien aktualisieren
 
 **Neue Konstante hinzufügen:**
-1. In `.ini` Dateien (4 Stück: DE/EN, Admin/Site)
-2. Falls Menu Item Type: in `.sys.ini` Dateien
+1. In allen 4 `.ini` Dateien (DE/EN, Admin/Site)
+2. Falls Menu Item Type: auch in `.sys.ini` Dateien
+3. Pattern: `COM_CLUBORGANISATION_[VIEW]_[CONTEXT]_[NAME]="Übersetzung"`
 
-**Pattern:**
+**Beispiel:**
 ```ini
-COM_CLUBORGANISATION_[VIEW]_[CONTEXT]_[NAME]="Übersetzung"
+# de-DE.com_cluborganisation.ini
+COM_CLUBORGANISATION_NEWVIEW_TITLE="Neue Ansicht"
+COM_CLUBORGANISATION_NEWVIEW_FIELD_NAME="Name"
+
+# de-DE.com_cluborganisation.sys.ini (für Menu Items)
+COM_CLUBORGANISATION_MENU_NEWVIEW_TITLE="Neue Ansicht"
+COM_CLUBORGANISATION_MENU_NEWVIEW_DESC="Beschreibung"
+```
+
+### Neue View erstellen
+
+**Erforderliche Schritte:**
+1. **Model:** `src/Model/NewModel.php` (ListModel oder AdminModel)
+2. **View:** `src/View/New/HtmlView.php`
+3. **Controller:** `src/Controller/NewController.php` (optional)
+4. **Template:** `tmpl/new/default.php` (oder `edit.php`)
+5. **Formular:** `forms/new.xml` (falls Edit-View)
+6. **Sprachdateien:** Konstanten in allen .ini Dateien
+7. **auto_install.sh:** Kopier-Logik hinzufügen
+
+### Verzeichnisstruktur erweitern
+
+**Neue Bereiche:**
+```bash
+# In auto_install.sh
+mkdir -p "$BUILD_DIR/admin/src/NewArea"
+mkdir -p "$BUILD_DIR/admin/tmpl/newarea"
+```
+
+**Neue Unterverzeichnisse:**
+```bash
+mkdir -p "$BUILD_DIR/admin/src/Helper/NewHelper"
+mkdir -p "$BUILD_DIR/media/newtype"
+```
+
+---
+
+## 🔍 Dateisystem-Konventionen
+
+### Index.html Schutz
+
+Alle Verzeichnisse enthalten `index.html` zum Schutz vor Directory Listing:
+```html
+<html><body></body></html>
+```
+
+Wird automatisch von `auto_install.sh` erstellt.
+
+### Berechtigungen
+
+**Empfohlene Berechtigungen:**
+```bash
+# Verzeichnisse
+755 (rwxr-xr-x)
+
+# PHP-Dateien
+644 (rw-r--r--)
+
+# Scripts
+755 (rwxr-xr-x) für auto_install.sh
+```
+
+**Owner:**
+```bash
+# Development
+user:user
+
+# Production (Joomla)
+www-data:www-data
+```
+
+### Git-Integration
+
+**.gitignore empfohlen:**
+```
+# Build-Output
+/opt/dev/cluborganisation/
+*.zip
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
 ```
 
 ---
 
 **Stand:** Februar 2026  
-**Version:** 1.0.0
+**Version:** 1.1.0
