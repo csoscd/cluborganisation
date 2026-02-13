@@ -90,6 +90,12 @@ HTMLHelper::_('behavior.keepalive');
                     <?php echo $this->form->renderField('member_no'); ?>
                     <?php echo $this->form->renderField('active'); ?>
                     <?php echo $this->form->renderField('user_id'); ?>
+                    
+                    <?php if (!$this->item->user_id) : ?>
+                        <?php echo $this->form->renderField('create_joomla_user'); ?>
+                        <?php echo $this->form->renderField('joomla_user_group'); ?>
+                    <?php endif; ?>
+                    
                     <?php echo $this->form->renderField('image'); ?>
                 </div>
             </div>

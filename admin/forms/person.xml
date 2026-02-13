@@ -185,6 +185,28 @@
             label="COM_CLUBORGANISATION_FIELD_USER_ID"
             description=""
         />
+        
+        <field
+            name="create_joomla_user"
+            type="checkbox"
+            label="COM_CLUBORGANISATION_FIELD_CREATE_JOOMLA_USER"
+            description="COM_CLUBORGANISATION_FIELD_CREATE_JOOMLA_USER_DESC"
+            value="1"
+        />
+        
+        <field
+            name="joomla_user_group"
+            type="sql"
+            label="COM_CLUBORGANISATION_FIELD_JOOMLA_USER_GROUP"
+            description="COM_CLUBORGANISATION_FIELD_JOOMLA_USER_GROUP_DESC"
+            query="SELECT id, title FROM #__usergroups ORDER BY lft"
+            key_field="id"
+            value_field="title"
+            default="2"
+            showon="create_joomla_user:1"
+        >
+            <option value="">COM_CLUBORGANISATION_SELECT_USER_GROUP</option>
+        </field>
     </fieldset>
 
     <fieldset name="publishing">
