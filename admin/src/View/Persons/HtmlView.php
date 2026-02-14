@@ -92,7 +92,7 @@ class HtmlView extends BaseHtmlView
 
         // Sidebar anzeigen
 	$this->sidebar = \Joomla\CMS\HTML\Helpers\Sidebar::render();
-	Changed because of JED Checker Hint
+	// Changed because of JED Checker Hint
         //$this->sidebar = \JHtmlSidebar::render();
 
         // Template anzeigen
