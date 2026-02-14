@@ -1,4 +1,11 @@
 <?php
+/**
+ * @package     ClubOrganisation
+ * @subpackage  Administrator
+ * @author      Christian Schulz <technik@meinetechnikwelt.rocks>
+ * @license     GNU General Public License version 3 or later
+ */
+
 namespace CSOSCD\Component\ClubOrganisation\Administrator\Table;
 defined('_JEXEC') or die;
 use Joomla\CMS\Table\Table;
