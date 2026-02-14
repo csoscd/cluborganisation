@@ -1,4 +1,11 @@
 <?php
+/**
+ * @package     ClubOrganisation
+ * @subpackage  Site
+ * @author      Christian Schulz <technik@meinetechnikwelt.rocks>
+ * @license     GNU General Public License version 3 or later
+ */
+
 defined('_JEXEC') or die;
 
 use Joomla\CMS\Dispatcher\ComponentDispatcherFactoryInterface;

@@ -3,8 +3,7 @@
  * @package     ClubOrganisation
  * @subpackage  Administrator
  * @author      Christian Schulz <technik@meinetechnikwelt.rocks>
- * @copyright   2026 Christian Schulz
- * @license     GNU General Public License version 2 or later
+ * @license     GNU General Public License version 3 or later
  */
 
 defined('_JEXEC') or die;

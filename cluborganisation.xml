@@ -3,11 +3,10 @@
     <name>COM_CLUBORGANISATION</name>
     <author>Christian Schulz</author>
     <creationDate>February 2026</creationDate>
-    <copyright>Copyright (C) 2026 Christian Schulz. All rights reserved.</copyright>
-    <license>GNU General Public License version 2 or later</license>
+    <license>GNU General Public License version 3 or later</license>
     <authorEmail>technik@meinetechnikwelt.rocks</authorEmail>
     <authorUrl>https://www.meinetechnikwelt.rocks</authorUrl>
-    <version>1.4.0</version>
+    <version>1.5.0</version>
     <description>COM_CLUBORGANISATION_XML_DESCRIPTION</description>
     <namespace path="src">CSOSCD\Component\ClubOrganisation</namespace>
 

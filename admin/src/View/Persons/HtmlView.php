@@ -3,8 +3,7 @@
  * @package     ClubOrganisation
  * @subpackage  Administrator
  * @author      Christian Schulz <technik@meinetechnikwelt.rocks>
- * @copyright   2026 Christian Schulz
- * @license     GNU General Public License version 2 or later
+ * @license     GNU General Public License version 3 or later
  */
 
 namespace CSOSCD\Component\ClubOrganisation\Administrator\View\Persons;
@@ -16,6 +15,7 @@ use Joomla\CMS\Toolbar\ToolbarHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Pagination\Pagination;
+
 
 /**
  * View-Klasse für die Personen-Liste
@@ -91,7 +91,9 @@ class HtmlView extends BaseHtmlView
         $this->addToolbar();
 
         // Sidebar anzeigen
-        $this->sidebar = \JHtmlSidebar::render();
+	$this->sidebar = \Joomla\CMS\HTML\Helpers\Sidebar::render();
+	Changed because of JED Checker Hint
+        //$this->sidebar = \JHtmlSidebar::render();
 
         // Template anzeigen
         parent::display($tpl);
