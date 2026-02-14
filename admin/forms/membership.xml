@@ -46,7 +46,7 @@
             name="end"
             type="calendar"
             label="COM_CLUBORGANISATION_FIELD_END"
-            description="COM_CLUBORGANISATION_FIELD_END_DESC"
+            description="COM_CLUBORGANISATION_FIELD_END_EDIT_DESC"
             class="inputbox"
             format="%Y-%m-%d"
         />
