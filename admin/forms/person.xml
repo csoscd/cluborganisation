@@ -207,6 +207,17 @@
         >
             <option value="">COM_CLUBORGANISATION_SELECT_USER_GROUP</option>
         </field>
+        
+        <field
+            name="send_credentials_email"
+            type="checkbox"
+            label="COM_CLUBORGANISATION_FIELD_SEND_CREDENTIALS_EMAIL"
+            description="COM_CLUBORGANISATION_FIELD_SEND_CREDENTIALS_EMAIL_DESC"
+            value="1"
+            default="1"
+            checked="true"
+            showon="create_joomla_user:1"
+        />
     </fieldset>
 
     <fieldset name="publishing">

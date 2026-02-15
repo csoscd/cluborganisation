@@ -63,6 +63,24 @@ class HtmlView extends BaseHtmlView
         $this->item = $this->get('Item');
         $this->state = $this->get('State');
 
+        // Prüfe ob zugeordneter Joomla-User noch existiert
+        if (!empty($this->item->user_id) && $this->item->user_id > 0) {
+            $db = Factory::getDbo();
+            $query = $db->getQuery(true)
+                ->select('COUNT(*)')
+                ->from($db->quoteName('#__users'))
+                ->where($db->quoteName('id') . ' = ' . (int) $this->item->user_id);
+            
+            $db->setQuery($query);
+            $userExists = (int) $db->loadResult() > 0;
+            
+            if (!$userExists) {
+                // User wurde gelöscht, setze Flags
+                $this->item->user_deleted = true;
+                $this->item->deleted_user_id = $this->item->user_id;
+            }
+        }
+
         // Prüfe auf Fehler
         if (count($errors = $this->get('Errors'))) {
             throw new \Exception(implode("\n", $errors), 500);

@@ -34,6 +34,59 @@ class PersonTable extends Table
     }
 
     /**
+     * Overridden bind method to handle user_id correctly
+     *
+     * @param   array  $array   Named array to bind to the table
+     * @param   mixed  $ignore  An optional array or space separated list of properties to ignore
+     *
+     * @return  boolean  True on success
+     *
+     * @since   1.6.0
+     */
+    public function bind($array, $ignore = '')
+    {
+        // KRITISCH: Behandle user_id BEVOR Joomla die Daten bindet
+        
+        // Wenn user_id im Array vorhanden ist
+        if (array_key_exists('user_id', $array)) {
+            $userId = $array['user_id'];
+            
+            // Prüfe alle Varianten von "kein Benutzer"
+            if ($userId === null || 
+                $userId === '' || 
+                $userId === 0 || 
+                $userId === '0' || 
+                $userId === false) {
+                
+                // Explizit auf NULL setzen
+                $array['user_id'] = null;
+            } else {
+                // Stelle sicher, dass es eine Integer ist
+                $array['user_id'] = (int) $userId;
+                
+                // Prüfe ob User existiert
+                if ($array['user_id'] > 0) {
+                    $db = $this->getDbo();
+                    $query = $db->getQuery(true)
+                        ->select('COUNT(*)')
+                        ->from($db->quoteName('#__users'))
+                        ->where($db->quoteName('id') . ' = ' . (int) $array['user_id']);
+                    
+                    $db->setQuery($query);
+                    $exists = (int) $db->loadResult() > 0;
+                    
+                    if (!$exists) {
+                        // User existiert nicht, setze auf NULL
+                        $array['user_id'] = null;
+                    }
+                }
+            }
+        }
+        
+        return parent::bind($array, $ignore);
+    }
+
+    /**
      * Overridden check method to ensure data integrity
      *
      * @return  boolean  True on success
@@ -114,6 +167,12 @@ class PersonTable extends Table
         // Setze modified Felder bei jedem Speichern
         $this->modified = $date->toSql();
         $this->modified_by = $user->id;
+
+        // WICHTIG: Wenn user_id NULL ist, muss updateNulls=true sein
+        // damit NULL auch wirklich in die DB geschrieben wird
+        if ($this->user_id === null) {
+            $updateNulls = true;
+        }
 
         return parent::store($updateNulls);
     }
