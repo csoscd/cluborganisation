@@ -175,10 +175,65 @@ class PersonModel extends AdminModel
             $table->deceased = null;
         }
         
-        // Leere Integer-Werte auf NULL setzen
-        if (empty($table->user_id)) {
+        // User-ID Validierung (KRITISCH für "Kein Benutzer" Auswahl)
+        // Diese Methode wird DIREKT vor dem DB-Speichern aufgerufen
+        
+        // Prüfe alle Varianten von "leer"
+        if (!isset($table->user_id) || 
+            $table->user_id === null || 
+            $table->user_id === '' || 
+            $table->user_id === 0 || 
+            $table->user_id === '0') {
+            
+            // Explizit auf NULL setzen
             $table->user_id = null;
+        } else {
+            // user_id hat einen Wert, prüfe ob User noch existiert
+            $userId = (int) $table->user_id;
+            
+            if ($userId > 0) {
+                // Prüfe ob User in Joomla existiert
+                if (!$this->userIdExists($userId)) {
+                    // User wurde gelöscht, setze auf NULL
+                    $table->user_id = null;
+                    
+                    // Warning-Message
+                    $app = Factory::getApplication();
+                    $app->enqueueMessage(
+                        \Joomla\CMS\Language\Text::_('COM_CLUBORGANISATION_USER_DELETED_CLEANED'),
+                        'warning'
+                    );
+                }
+            } else {
+                // Negative oder ungültige ID
+                $table->user_id = null;
+            }
         }
+    }
+    
+    /**
+     * Prüft ob ein Joomla-User mit der ID existiert
+     *
+     * @param   int  $userId  Die zu prüfende User-ID
+     *
+     * @return  boolean  True wenn User existiert
+     *
+     * @since   1.6.0
+     */
+    protected function userIdExists($userId)
+    {
+        if (empty($userId) || $userId == 0) {
+            return false;
+        }
+        
+        $db = Factory::getDbo();
+        $query = $db->getQuery(true)
+            ->select('COUNT(*)')
+            ->from($db->quoteName('#__users'))
+            ->where($db->quoteName('id') . ' = ' . (int) $userId);
+        
+        $db->setQuery($query);
+        return (int) $db->loadResult() > 0;
     }
     
     /**
@@ -195,10 +250,16 @@ class PersonModel extends AdminModel
         $app = Factory::getApplication();
         $createUser = isset($data['create_joomla_user']) && $data['create_joomla_user'];
         $userGroup = isset($data['joomla_user_group']) ? (int)$data['joomla_user_group'] : 2;
+        $sendEmail = isset($data['send_credentials_email']) && $data['send_credentials_email'];
         
-        // Entferne create_joomla_user und joomla_user_group aus den Daten (nicht in der DB)
+        // Entferne create_joomla_user, joomla_user_group und send_credentials_email aus den Daten (nicht in der DB)
         unset($data['create_joomla_user']);
         unset($data['joomla_user_group']);
+        unset($data['send_credentials_email']);
+        
+        // WICHTIG: user_id Validierung erfolgt in prepareTable()
+        // prepareTable() wird von parent::save() vor dem DB-Update aufgerufen
+        // und bereinigt user_id zuverlässig
         
         // Standard-Speichern
         if (!parent::save($data)) {
@@ -211,7 +272,7 @@ class PersonModel extends AdminModel
             $table = $this->getTable();
             
             if ($table->load($personId)) {
-                $userId = $this->createJoomlaUser($table, $userGroup);
+                $userId = $this->createJoomlaUser($table, $userGroup, $sendEmail);
                 
                 if ($userId) {
                     // Speichere user_id in Person
@@ -221,10 +282,18 @@ class PersonModel extends AdminModel
                     // Zeige Erfolgs-Nachricht mit generiertem Passwort
                     $password = $app->getUserState('com_cluborganisation.user.password', '');
                     $username = $app->getUserState('com_cluborganisation.user.username', '');
-                    $app->enqueueMessage(
-                        sprintf(\Joomla\CMS\Language\Text::_('COM_CLUBORGANISATION_USER_CREATED'), $username, $password),
-                        'info'
-                    );
+                    
+                    if ($sendEmail) {
+                        $app->enqueueMessage(
+                            sprintf(\Joomla\CMS\Language\Text::_('COM_CLUBORGANISATION_USER_CREATED_EMAIL_SENT'), $username),
+                            'success'
+                        );
+                    } else {
+                        $app->enqueueMessage(
+                            sprintf(\Joomla\CMS\Language\Text::_('COM_CLUBORGANISATION_USER_CREATED'), $username, $password),
+                            'info'
+                        );
+                    }
                     
                     // Lösche Passwort aus Session
                     $app->setUserState('com_cluborganisation.user.password', null);
@@ -239,16 +308,18 @@ class PersonModel extends AdminModel
     /**
      * Erstellt einen Joomla-User für die Person
      *
-     * @param   \Joomla\CMS\Table\Table  $person     Person-Tabelle
-     * @param   int                      $groupId    Joomla User Group ID
+     * @param   \Joomla\CMS\Table\Table  $person      Person-Tabelle
+     * @param   int                      $groupId     Joomla User Group ID
+     * @param   boolean                  $sendEmail   Zugangsdaten per E-Mail senden
      *
      * @return  int|false  User-ID bei Erfolg, false bei Fehler
      *
      * @since   1.3.0
      */
-    protected function createJoomlaUser($person, $groupId = 2)
+    protected function createJoomlaUser($person, $groupId = 2, $sendEmail = false)
     {
         $app = Factory::getApplication();
+        $params = \Joomla\CMS\Component\ComponentHelper::getParams('com_cluborganisation');
         
         try {
             // Generiere Username
@@ -257,6 +328,10 @@ class PersonModel extends AdminModel
             // Generiere zufälliges 12-stelliges Passwort (Joomla-Standard)
             $password = $this->generatePassword(12);
             
+            // Hole Konfigurations-Werte
+            $requireReset = $params->get('user_require_reset', 1);
+            $blockStatus = $params->get('user_block', 0);
+            
             // Erstelle User-Daten
             $userData = [
                 'name'       => trim($person->firstname . ' ' . $person->lastname),
@@ -264,9 +339,9 @@ class PersonModel extends AdminModel
                 'email'      => $person->email,
                 'password'   => $password,
                 'password2'  => $password,
-                'block'      => 0, // enabled
+                'block'      => $blockStatus,
                 'sendEmail'  => 0, // Receive System Emails = No
-                'requireReset' => 1, // Require Password Reset = Yes
+                'requireReset' => $requireReset,
                 'registerDate' => Factory::getDate()->toSql(),
                 'groups'     => [$groupId], // Ausgewählte Benutzergruppe
             ];
@@ -295,6 +370,11 @@ class PersonModel extends AdminModel
             // Speichere Passwort in Session für Anzeige
             $app->setUserState('com_cluborganisation.user.password', $password);
             $app->setUserState('com_cluborganisation.user.username', $username);
+            
+            // Sende E-Mail mit Zugangsdaten wenn gewünscht
+            if ($sendEmail) {
+                $this->sendCredentialsEmail($person, $username, $password);
+            }
             
             return $user->id;
             
@@ -459,5 +539,80 @@ class PersonModel extends AdminModel
         }
         
         return $result;
+    }
+    
+    /**
+     * Sendet E-Mail mit Zugangsdaten an die Person
+     *
+     * @param   \Joomla\CMS\Table\Table  $person    Person-Tabelle
+     * @param   string                   $username  Generierter Username
+     * @param   string                   $password  Generiertes Passwort
+     *
+     * @return  boolean  True bei Erfolg
+     *
+     * @since   1.6.0
+     */
+    protected function sendCredentialsEmail($person, $username, $password)
+    {
+        $app = Factory::getApplication();
+        $params = \Joomla\CMS\Component\ComponentHelper::getParams('com_cluborganisation');
+        
+        try {
+            // Hole E-Mail-Konfiguration
+            $fromEmail = $params->get('user_email_from', '');
+            $emailText = $params->get('user_email_text', '');
+            
+            // Wenn keine Absender-E-Mail konfiguriert, verwende Joomla-Standard
+            if (empty($fromEmail)) {
+                $fromEmail = $app->get('mailfrom');
+            }
+            
+            // Wenn kein E-Mail-Text konfiguriert, verwende Standard-Text
+            if (empty($emailText)) {
+                $emailText = \Joomla\CMS\Language\Text::_('COM_CLUBORGANISATION_DEFAULT_EMAIL_TEXT');
+            }
+            
+            // Ersetze Platzhalter
+            $replacements = [
+                '[FIRSTNAME]' => $person->firstname,
+                '[LASTNAME]'  => $person->lastname,
+                '[USERNAME]'  => $username,
+                '[PASSWORD]'  => $password,
+            ];
+            
+            $emailBody = str_replace(
+                array_keys($replacements),
+                array_values($replacements),
+                $emailText
+            );
+            
+            // Erstelle Mail-Objekt
+            $mailer = Factory::getMailer();
+            $mailer->setSender([$fromEmail, $app->get('fromname')]);
+            $mailer->addRecipient($person->email);
+            $mailer->setSubject(\Joomla\CMS\Language\Text::_('COM_CLUBORGANISATION_EMAIL_SUBJECT_CREDENTIALS'));
+            $mailer->isHtml(true); // HTML-Format aktivieren
+            $mailer->setBody($emailBody);
+            
+            // Sende E-Mail
+            $sent = $mailer->send();
+            
+            if (!$sent) {
+                $app->enqueueMessage(
+                    \Joomla\CMS\Language\Text::_('COM_CLUBORGANISATION_EMAIL_SEND_FAILED'),
+                    'warning'
+                );
+                return false;
+            }
+            
+            return true;
+            
+        } catch (\Exception $e) {
+            $app->enqueueMessage(
+                sprintf(\Joomla\CMS\Language\Text::_('COM_CLUBORGANISATION_EMAIL_SEND_FAILED') . ': %s', $e->getMessage()),
+                'warning'
+            );
+            return false;
+        }
     }
 }

@@ -1,6 +1,6 @@
 # ClubOrganisation - Joomla 5/6 Komponente
 
-**Version:** 1.3.0  
+**Version:** 1.6.0  
 **Lizenz:** GPLv3 (siehe LICENSE Datei)
 
 ---
@@ -31,6 +31,8 @@ Inspiriert wurde das Projekt von https://github.com/momo10216/clubmgnt. Da dort 
 - Anlegen, Bearbeiten, Löschen, Batch-Operationen
 - Foto-Upload mit Vorschau
 - Verknüpfung mit Joomla-Benutzer
+- **Automatische Joomla-User Erstellung** mit konfigurierbarer Benutzergruppe
+- **E-Mail-Versand von Zugangsdaten** (optional, konfigurierbar)
 - Entry Year / Exit Year (automatisch aus Mitgliedschaften)
 - Automatische Zeitstempel
 
@@ -298,13 +300,20 @@ CSOSCD\Component\ClubOrganisation\[Administrator|Site]\[Type]
    Backend → ClubOrganisation → Options
    → DSGVO: Jahre bis Cleanup (Standard: 3)
    → Berechtigungen für Benutzergruppen
+   → Joomla-User Einstellungen
    ```
 
-2. **Stammdaten prüfen:**
+2. **Joomla-User Einstellungen konfigurieren:**
+   - **Absender E-Mail-Adresse**: E-Mail für Zugangsdaten-Versand
+   - **E-Mail-Text**: Template mit Platzhaltern [FIRSTNAME], [LASTNAME], [USERNAME], [PASSWORD]
+   - **Passwortzurücksetzung fordern**: Default Ja/Nein
+   - **Benutzerstatus**: Default Freigegeben/Gesperrt
+
+3. **Stammdaten prüfen:**
    - Anreden (sollten angelegt sein)
    - Mitgliedschaftstypen (sollten angelegt sein)
 
-3. **Verschlüsselung einrichten:**
+4. **Verschlüsselung einrichten:**
    - Verschlüsselungsschlüssel generieren
    - In Session speichern (automatisch)
    - Vor jedem Zugriff auf Bankdaten eingeben
@@ -473,6 +482,6 @@ Wenn dir das Projekt gefällt:
 
 **Viel Erfolg mit ClubOrganisation! 🎉**
 
-**Version:** 1.3.0  
+**Version:** 1.6.0  
 **Stand:** Februar 2026  
 **Produktionsbereit:** ✅

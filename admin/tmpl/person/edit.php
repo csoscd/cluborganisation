@@ -88,11 +88,28 @@ HTMLHelper::_('behavior.keepalive');
                 <div class="card-body">
                     <?php echo $this->form->renderField('member_no'); ?>
                     <?php echo $this->form->renderField('active'); ?>
-                    <?php echo $this->form->renderField('user_id'); ?>
                     
-                    <?php if (!$this->item->user_id) : ?>
+                    <?php if (!empty($this->item->user_deleted)) : ?>
+                        <!-- Gelöschter User: Warnung + Checkbox, KEIN User-Feld -->
+                        <div class="alert alert-warning">
+                            <strong><?php echo Text::_('COM_CLUBORGANISATION_WARNING'); ?></strong><br>
+                            <?php echo Text::sprintf('COM_CLUBORGANISATION_USER_DELETED_MESSAGE', $this->item->deleted_user_id); ?>
+                        </div>
+                        <!-- Hidden field um user_id auf NULL zu setzen -->
+                        <input type="hidden" name="jform[user_id]" value="" />
                         <?php echo $this->form->renderField('create_joomla_user'); ?>
                         <?php echo $this->form->renderField('joomla_user_group'); ?>
+                        <?php echo $this->form->renderField('send_credentials_email'); ?>
+                    <?php else : ?>
+                        <!-- Normaler Fall: User-Feld anzeigen -->
+                        <?php echo $this->form->renderField('user_id'); ?>
+                        
+                        <?php if (empty($this->item->user_id)) : ?>
+                            <!-- Kein User zugeordnet: Checkbox anzeigen -->
+                            <?php echo $this->form->renderField('create_joomla_user'); ?>
+                            <?php echo $this->form->renderField('joomla_user_group'); ?>
+                            <?php echo $this->form->renderField('send_credentials_email'); ?>
+                        <?php endif; ?>
                     <?php endif; ?>
                     
                     <?php echo $this->form->renderField('image'); ?>
