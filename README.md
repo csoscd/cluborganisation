@@ -1,6 +1,6 @@
 # ClubOrganisation - Joomla 5/6 Komponente
 
-**Version:** 1.7.0  
+**Version:** 1.8.0  
 **Lizenz:** GPLv3 (siehe LICENSE Datei)
 
 ---
@@ -25,7 +25,21 @@ Inspiriert wurde das Projekt von https://github.com/momo10216/clubmgnt. Da dort 
 
 ## ✨ Features
 
-### Administrator-Bereich (9 Views)
+### Administrator-Bereich (10 Views)
+
+#### BwPostman Synchronisation ⭐ NEU in 1.7.0
+- 3-stufiger Synchronisationsprozess mit BwPostman Newsletter-Komponente
+- **Aktive Mitglieder**: Automatisches Anlegen/Aktualisieren in BwPostman
+  - Neue Subscriber werden erstellt
+  - Archivierte/Inaktive werden reaktiviert
+  - Mailinglist-Verbindungen werden hergestellt
+- **Inaktive Mitglieder**: Archivierung in BwPostman
+  - Mitglieder ohne aktive Mitgliedschaft werden markiert
+  - Kein Newsletter-Versand mehr an inaktive Mitglieder
+- **Mailinglist-Auswahl**: Flexible Zuordnung zu verschiedenen Listen
+- **Gender-Mapping**: Konfigurierbare Zuordnung Anrede → Geschlecht
+- Intelligent Matching über Mitgliedsnummer
+- Transaction-Safe mit vollständigem Rollback
 
 #### Personen
 - Liste aller Personen mit Filter (Name, Mitgliedsnummer, Aktiv-Status)
@@ -227,7 +241,7 @@ CSOSCD\Component\ClubOrganisation\[Administrator|Site]\[Type]
 
 ### Komponenten-Übersicht
 
-**Backend (9 Views):**
+**Backend (10 Views):**
 - Persons (Liste + Edit)
 - Memberships (Liste + Edit)
 - Membershipbanks (Liste + Edit)
@@ -235,6 +249,7 @@ CSOSCD\Component\ClubOrganisation\[Administrator|Site]\[Type]
 - Membershiptypes (Liste + Edit)
 - Membershiptypefees (Liste + Edit) ⭐ NEU
 - Feereport ⭐ NEU
+- Bwpostmansync ⭐ NEU
 - Migration
 - DSGVO Cleanup
 
@@ -463,11 +478,12 @@ Wenn dir das Projekt gefällt:
 | Joomla 5 kompatibel | ✅ |
 | Joomla 6 kompatibel | ✅ |
 | PHP 8.1+ | ✅ |
-| **Backend (9 Views)** | |
+| **Backend (10 Views)** | |
 | Personen-Verwaltung | ✅ |
 | Mitgliedschafts-Verwaltung | ✅ |
 | Mitgliedschaftsgebühren | ✅ |
 | Beitragsübersicht | ✅ |
+| BwPostman Synchronisation | ✅ |
 | Bankdaten (verschlüsselt) | ✅ |
 | Stammdaten (Anreden, Typen) | ✅ |
 | Migration Tool | ✅ |
@@ -515,6 +531,6 @@ Wenn dir das Projekt gefällt:
 
 **Viel Erfolg mit ClubOrganisation! 🎉**
 
-**Version:** 1.7.0  
+**Version:** 1.8.0  
 **Stand:** Februar 2026  
 **Produktionsbereit:** ✅

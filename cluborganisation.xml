@@ -6,7 +6,7 @@
     <license>GNU General Public License version 3 or later</license>
     <authorEmail>technik@meinetechnikwelt.rocks</authorEmail>
     <authorUrl>https://www.meinetechnikwelt.rocks</authorUrl>
-    <version>1.7.0</version>
+    <version>1.8.0</version>
     <description>COM_CLUBORGANISATION_XML_DESCRIPTION</description>
     <namespace path="src">CSOSCD\Component\ClubOrganisation</namespace>
 
@@ -43,6 +43,7 @@
             <menu link="option=com_cluborganisation&amp;view=membershiptypes">COM_CLUBORGANISATION_MENU_MEMBERSHIPTYPES</menu>
             <menu link="option=com_cluborganisation&amp;view=membershiptypefees">COM_CLUBORGANISATION_MENU_MEMBERSHIPTYPEFEES</menu>
             <menu link="option=com_cluborganisation&amp;view=feereport">COM_CLUBORGANISATION_MENU_FEEREPORT</menu>
+            <menu link="option=com_cluborganisation&amp;view=bwpostmansync">COM_CLUBORGANISATION_MENU_BWPOSTMAN_SYNC</menu>
             <menu link="option=com_cluborganisation&amp;view=migration">COM_CLUBORGANISATION_MENU_MIGRATION</menu>
             <menu link="option=com_cluborganisation&amp;view=dsgvocleanup">COM_CLUBORGANISATION_MENU_DSGVO_CLEANUP</menu>
         </submenu>
