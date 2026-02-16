@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<metadata>
+    <layout title="COM_CLUBORGANISATION_FEELIST_VIEW_DEFAULT_TITLE">
+        <message>
+            <![CDATA[COM_CLUBORGANISATION_FEELIST_VIEW_DEFAULT_DESC]]>
+        </message>
+    </layout>
+    
+    <fields name="request">
+        <fieldset name="request">
+            <field
+                name="id"
+                type="hidden"
+                default="0"
+            />
+        </fieldset>
+    </fields>
+</metadata>

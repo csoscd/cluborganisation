@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<form>
+    <fields name="filter">
+        <field
+            name="search"
+            type="text"
+            label="COM_CLUBORGANISATION_FILTER_SEARCH_LABEL"
+            description="COM_CLUBORGANISATION_FILTER_SEARCH_DESC"
+            hint="JSEARCH_FILTER"
+        />
+
+        <field
+            name="published"
+            type="status"
+            label="JOPTION_SELECT_PUBLISHED"
+            description="JOPTION_SELECT_PUBLISHED_DESC"
+            onchange="this.form.submit();"
+        >
+            <option value="">JOPTION_SELECT_PUBLISHED</option>
+        </field>
+
+        <field
+            name="membershiptype_id"
+            type="sql"
+            label="COM_CLUBORGANISATION_FILTER_MEMBERSHIPTYPE"
+            description="COM_CLUBORGANISATION_FILTER_MEMBERSHIPTYPE_DESC"
+            query="SELECT id, title FROM #__cluborganisation_membershiptypes WHERE published = 1 ORDER BY title"
+            key_field="id"
+            value_field="title"
+            onchange="this.form.submit();"
+        >
+            <option value="">COM_CLUBORGANISATION_SELECT_MEMBERSHIPTYPE</option>
+        </field>
+    </fields>
+
+    <fields name="list">
+        <field
+            name="fullordering"
+            type="list"
+            label="COM_CLUBORGANISATION_LIST_FULL_ORDERING"
+            description="COM_CLUBORGANISATION_LIST_FULL_ORDERING_DESC"
+            onchange="this.form.submit();"
+            default="f.begin DESC"
+        >
+            <option value="">JGLOBAL_SORT_BY</option>
+            <option value="f.begin ASC">COM_CLUBORGANISATION_FIELD_BEGIN_DATE_ASC</option>
+            <option value="f.begin DESC">COM_CLUBORGANISATION_FIELD_BEGIN_DATE_DESC</option>
+            <option value="membershiptype_title ASC">COM_CLUBORGANISATION_FIELD_MEMBERSHIPTYPE_ASC</option>
+            <option value="membershiptype_title DESC">COM_CLUBORGANISATION_FIELD_MEMBERSHIPTYPE_DESC</option>
+            <option value="f.amount ASC">COM_CLUBORGANISATION_FIELD_AMOUNT_ASC</option>
+            <option value="f.amount DESC">COM_CLUBORGANISATION_FIELD_AMOUNT_DESC</option>
+            <option value="f.id ASC">JGRID_HEADING_ID_ASC</option>
+            <option value="f.id DESC">JGRID_HEADING_ID_DESC</option>
+        </field>
+
+        <field
+            name="limit"
+            type="limitbox"
+            label="JGLOBAL_LIST_LIMIT"
+            description="JGLOBAL_LIST_LIMIT_DESC"
+            class="input-mini"
+            default="25"
+            onchange="this.form.submit();"
+        />
+    </fields>
+</form>
