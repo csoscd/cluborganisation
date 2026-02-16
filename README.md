@@ -1,6 +1,6 @@
 # ClubOrganisation - Joomla 5/6 Komponente
 
-**Version:** 1.6.0  
+**Version:** 1.7.0  
 **Lizenz:** GPLv3 (siehe LICENSE Datei)
 
 ---
@@ -11,6 +11,7 @@ Vollständige Joomla-Komponente zur Verwaltung von Vereinsmitgliedschaften mit:
 
 ✅ **Personen-Verwaltung** - Mitgliederdaten mit Foto und Entry/Exit Year  
 ✅ **Mitgliedschafts-Verwaltung** - Zeitraum-basiert mit Überschneidungsprüfung  
+✅ **Beitrags-Verwaltung** - Zeitbasierte Gebühren pro Membershiptype  
 ✅ **Bankdaten-Verwaltung** - AES-256 verschlüsselt  
 ✅ **Migration Tool** - Import aus Clubmanagement  
 ✅ **DSGVO-konform** - Automatische Anonymisierung  
@@ -24,7 +25,7 @@ Inspiriert wurde das Projekt von https://github.com/momo10216/clubmgnt. Da dort 
 
 ## ✨ Features
 
-### Administrator-Bereich (7 Views)
+### Administrator-Bereich (9 Views)
 
 #### Personen
 - Liste aller Personen mit Filter (Name, Mitgliedsnummer, Aktiv-Status)
@@ -42,6 +43,20 @@ Inspiriert wurde das Projekt von https://github.com/momo10216/clubmgnt. Da dort 
 - Kategorisierung nach Typ
 - Mehrere Mitgliedschaften pro Person möglich
 - Maximal eine aktive Mitgliedschaft gleichzeitig
+
+#### Mitgliedschaftsgebühren ⭐ NEU in 1.7.0
+- Verwaltung von Beiträgen pro Mitgliedschaftstyp
+- Zeitbasierte Gültigkeit (begin-Datum)
+- Historische Gebühren und zukünftige Änderungen
+- Beliebig viele Fees pro Membershiptype
+- Decimal(10,2) für präzise Cent-Beträge
+
+#### Beitragsübersicht ⭐ NEU in 1.7.0
+- Automatische Berechnung für aktuelles Jahr
+- Automatische Berechnung für kommendes Jahr
+- Gruppierung nach Membershiptype
+- Summen: Anzahl × Beitrag
+- Gesamtsummen pro Jahr
 
 #### Bankverbindungen
 - Verschlüsselte Speicherung (AES-256-CBC mit Sodium)
@@ -73,7 +88,7 @@ Inspiriert wurde das Projekt von https://github.com/momo10216/clubmgnt. Da dort 
 - Transaction-Safe mit Audit-Trail
 - DSGVO Artikel 17 konform
 
-### Frontend-Bereich (4 Views)
+### Frontend-Bereich (5 Views)
 
 #### Aktive Mitglieder
 - Übersicht aller aktiven Vereinsmitglieder
@@ -89,6 +104,13 @@ Inspiriert wurde das Projekt von https://github.com/momo10216/clubmgnt. Da dort 
 - Entry Year / Exit Year basiert
 - Konfigurierbare Spalten und Sortierung
 - Pagination funktionsfähig
+
+#### Mitgliedschaftsgebühren ⭐ NEU in 1.7.0
+- Öffentliche Darstellung aktueller Fees
+- Zeigt zukünftige Gebührenänderungen
+- Gruppiert nach Membershiptype
+- Übersichtliche Tabelle mit Gültig-ab-Datum
+- Konfigurierbar über Menü-Item
 
 #### Meine Mitgliedschaften
 - Liste aller Mitgliedschaften des eingeloggten Benutzers
@@ -120,6 +142,11 @@ Inspiriert wurde das Projekt von https://github.com/momo10216/clubmgnt. Da dort 
    
 5. **#__cluborganisation_membershiptypes** - Mitgliedschaftstypen
    - Kategorisierung und Beitragsklassen
+
+6. **#__cluborganisation_membershiptype_fees** - Mitgliedschaftsgebühren ⭐ NEU in 1.7.0
+   - Zeitbasierte Fees pro Membershiptype
+   - begin (Gültig ab), amount (DECIMAL 10,2)
+   - Historische und zukünftige Gebühren
 
 ### Besonderheiten
 
@@ -200,19 +227,22 @@ CSOSCD\Component\ClubOrganisation\[Administrator|Site]\[Type]
 
 ### Komponenten-Übersicht
 
-**Backend (7 Views):**
+**Backend (9 Views):**
 - Persons (Liste + Edit)
 - Memberships (Liste + Edit)
 - Membershipbanks (Liste + Edit)
 - Salutations (Liste + Edit)
 - Membershiptypes (Liste + Edit)
+- Membershiptypefees (Liste + Edit) ⭐ NEU
+- Feereport ⭐ NEU
 - Migration
 - DSGVO Cleanup
 
-**Frontend (4 Views):**
+**Frontend (5 Views):**
 - Active Members (Liste)
 - Membership List (Liste)
 - Member Movements (Eintritte/Austritte)
+- Fee List (Gebührenliste) ⭐ NEU
 - My Profile (Einzelansicht)
 
 **Helper & Utilities:**
@@ -433,16 +463,19 @@ Wenn dir das Projekt gefällt:
 | Joomla 5 kompatibel | ✅ |
 | Joomla 6 kompatibel | ✅ |
 | PHP 8.1+ | ✅ |
-| **Backend (7 Views)** | |
+| **Backend (9 Views)** | |
 | Personen-Verwaltung | ✅ |
 | Mitgliedschafts-Verwaltung | ✅ |
+| Mitgliedschaftsgebühren | ✅ |
+| Beitragsübersicht | ✅ |
 | Bankdaten (verschlüsselt) | ✅ |
 | Stammdaten (Anreden, Typen) | ✅ |
 | Migration Tool | ✅ |
 | DSGVO Cleanup | ✅ |
-| **Frontend (4 Views)** | |
+| **Frontend (5 Views)** | |
 | Aktive Mitglieder | ✅ |
 | Eintritte/Austritte | ✅ |
+| Mitgliedschaftsgebühren | ✅ |
 | Mein Profil | ✅ |
 | Meine Mitgliedschaften | ✅ |
 | **Features** | |
@@ -467,7 +500,7 @@ Wenn dir das Projekt gefällt:
 - [ ] Excel-Import/Export
 - [ ] Statistik-Dashboard
 - [ ] Geburtstagsliste
-- [ ] Beitrags-Verwaltung
+- [x] Beitrags-Verwaltung ✅ **Fertig in v1.7.0**
 - [ ] Rechnungserstellung
 
 ### In Planung
@@ -482,6 +515,6 @@ Wenn dir das Projekt gefällt:
 
 **Viel Erfolg mit ClubOrganisation! 🎉**
 
-**Version:** 1.6.0  
+**Version:** 1.7.0  
 **Stand:** Februar 2026  
 **Produktionsbereit:** ✅

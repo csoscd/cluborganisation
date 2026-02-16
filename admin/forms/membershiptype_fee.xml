@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<form>
+    <fieldset name="details">
+        <field
+            name="id"
+            type="hidden"
+        />
+
+        <field
+            name="membershiptype_id"
+            type="sql"
+            label="COM_CLUBORGANISATION_FIELD_MEMBERSHIPTYPE"
+            description="COM_CLUBORGANISATION_FIELD_MEMBERSHIPTYPE_FEE_DESC"
+            query="SELECT id, title FROM #__cluborganisation_membershiptypes WHERE published = 1 ORDER BY title"
+            key_field="id"
+            value_field="title"
+            required="true"
+            validate="options"
+        >
+            <option value="">COM_CLUBORGANISATION_SELECT_MEMBERSHIPTYPE</option>
+        </field>
+
+        <field
+            name="begin"
+            type="calendar"
+            label="COM_CLUBORGANISATION_FIELD_BEGIN_DATE"
+            description="COM_CLUBORGANISATION_FIELD_BEGIN_DATE_FEE_DESC"
+            class="inputbox"
+            format="%Y-%m-%d"
+            required="true"
+            filter="date"
+        />
+
+        <field
+            name="amount"
+            type="number"
+            label="COM_CLUBORGANISATION_FIELD_AMOUNT"
+            description="COM_CLUBORGANISATION_FIELD_AMOUNT_SORT_DESC"
+            class="inputbox"
+            min="0"
+            step="0.01"
+            required="true"
+            hint="0.00"
+        />
+
+        <field
+            name="published"
+            type="list"
+            label="JSTATUS"
+            description=""
+            class="inputbox"
+            default="1"
+        >
+            <option value="1">JPUBLISHED</option>
+            <option value="0">JUNPUBLISHED</option>
+        </field>
+    </fieldset>
+
+    <fieldset name="publishing">
+        <field
+            name="created"
+            type="calendar"
+            label="COM_CLUBORGANISATION_FIELD_CREATED"
+            description=""
+            class="inputbox"
+            format="%Y-%m-%d %H:%M:%S"
+            readonly="true"
+            disabled="true"
+        />
+
+        <field
+            name="created_by"
+            type="user"
+            label="COM_CLUBORGANISATION_FIELD_CREATED_BY"
+            description=""
+            readonly="true"
+            disabled="true"
+        />
+
+        <field
+            name="modified"
+            type="calendar"
+            label="COM_CLUBORGANISATION_FIELD_MODIFIED"
+            description=""
+            class="inputbox"
+            format="%Y-%m-%d %H:%M:%S"
+            readonly="true"
+            disabled="true"
+        />
+
+        <field
+            name="modified_by"
+            type="user"
+            label="COM_CLUBORGANISATION_FIELD_MODIFIED_BY"
+            description=""
+            readonly="true"
+            disabled="true"
+        />
+    </fieldset>
+</form>
