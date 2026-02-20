@@ -1,6 +1,6 @@
 # ClubOrganisation - Joomla 5/6 Komponente
 
-**Version:** 1.8.0  
+**Version:** 1.9.0  
 **Lizenz:** GPLv3 (siehe LICENSE Datei)
 
 ---
@@ -27,7 +27,14 @@ Inspiriert wurde das Projekt von https://github.com/momo10216/clubmgnt. Da dort 
 
 ### Administrator-Bereich (10 Views)
 
-#### BwPostman Synchronisation ⭐ NEU in 1.8.0
+#### Schlüsselverwaltung Bankdaten ⭐ NEU in 1.9.0
+- Entsperr-Maske beim Öffnen der Bankverbindungsübersicht
+- Verschlüsselungsschlüssel wird nur in der PHP-Session gehalten (nie gespeichert)
+- Schlüssel-Rotation: alle Bankdaten mit neuem Schlüssel neu verschlüsseln (Sicherheits-Button in der Übersicht)
+- Sperren-Button: Schlüssel sofort aus Session entfernen
+- IBAN-Maskierung in der Übersichtsliste
+
+#### BwPostman Synchronisation ⭐ seit 1.8.0
 - 3-stufiger Synchronisationsprozess mit BwPostman Newsletter-Komponente
 - **Aktive Mitglieder**: Automatisches Anlegen/Aktualisieren in BwPostman
   - Neue Subscriber werden erstellt
@@ -365,6 +372,6 @@ Wenn dir das Projekt gefällt:
 
 **Viel Erfolg mit ClubOrganisation! 🎉**
 
-**Version:** 1.8.0  
+**Version:** 1.9.0  
 **Stand:** Februar 2026  
 **Produktionsbereit:** ✅

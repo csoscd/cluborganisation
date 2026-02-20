@@ -115,6 +115,8 @@ cluborganisation/
 │   │   ├── membershipbank/
 │   │   │   └── edit.php                    # Bankverbindung Formular
 │   │   ├── membershipbanks/
+│   │   │   ├── default.php         # Bankverbindungsliste (mit Personenname, IBAN-Maskierung, Key-Rotation-Modal)
+│   │   │   └── unlock.php          # Entsperr-Maske für Verschlüsselungsschlüssel
 │   │   │   └── default.php                 # Bankverbindungen Liste
 │   │   ├── membership/
 │   │   │   └── edit.php                    # Mitgliedschaft Formular
