@@ -6,14 +6,6 @@
         description="COM_CLUBORGANISATION_CONFIG_COMPONENT_DESC"
     >
         <field
-            name="encryption_key"
-            type="password"
-            label="COM_CLUBORGANISATION_CONFIG_ENCRYPTION_KEY_LABEL"
-            description="COM_CLUBORGANISATION_CONFIG_ENCRYPTION_KEY_DESC"
-            autocomplete="off"
-        />
-        
-        <field
             name="dsgvo_years_threshold"
             type="number"
             label="COM_CLUBORGANISATION_CONFIG_DSGVO_YEARS_LABEL"

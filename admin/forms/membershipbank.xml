@@ -4,6 +4,7 @@
         <field
             name="id"
             type="hidden"
+            default="0"
         />
 
         <field
@@ -12,7 +13,7 @@
             label="COM_CLUBORGANISATION_FIELD_MEMBERSHIP"
             description=""
             required="true"
-            query="SELECT m.id, CONCAT(p.lastname, ', ', p.firstname, ' (', p.member_no, ') - ', t.title, ' (', DATE_FORMAT(m.begin, '%d.%m.%Y'), IFNULL(CONCAT(' - ', DATE_FORMAT(m.end, '%d.%m.%Y')), ' - laufend'), ')') AS name FROM #__cluborganisation_memberships m LEFT JOIN #__cluborganisation_persons p ON m.person_id = p.id LEFT JOIN #__cluborganisation_membershiptypes t ON m.type = t.id ORDER BY p.lastname, p.firstname"
+            query="SELECT m.id, CONCAT(p.lastname, ', ', p.firstname, ' (', p.member_no, ') - ', t.title, ' (', DATE_FORMAT(m.begin, '%d.%m.%Y'), IFNULL(CONCAT(' - ', DATE_FORMAT(m.end, '%d.%m.%Y')), ' - laufend'), ')') AS name FROM #__cluborganisation_memberships m LEFT JOIN #__cluborganisation_persons p ON m.person_id = p.id LEFT JOIN #__cluborganisation_membershiptypes t ON m.type = t.id WHERE m.end IS NULL OR m.end >= CURDATE() ORDER BY p.lastname, p.firstname"
             key_field="id"
             value_field="name"
         >
@@ -20,54 +21,44 @@
         </field>
 
         <field
-            name="encryption_key"
-            type="password"
-            label="COM_CLUBORGANISATION_FIELD_ENCRYPTION_KEY"
-            description="COM_CLUBORGANISATION_FIELD_ENCRYPTION_KEY_DESC"
-            class="inputbox"
-            autocomplete="off"
-            hint="Required for encryption"
-        />
-
-        <field
             name="accountname"
             type="text"
             label="COM_CLUBORGANISATION_FIELD_ACCOUNTNAME"
-            description=""
-            class="inputbox"
-            size="60"
+            description="COM_CLUBORGANISATION_FIELD_ACCOUNTNAME_DESC"
             required="true"
+            maxlength="255"
+            class="form-control"
         />
 
         <field
             name="iban"
             type="text"
             label="COM_CLUBORGANISATION_FIELD_IBAN"
-            description=""
-            class="inputbox"
-            size="40"
+            description="COM_CLUBORGANISATION_FIELD_IBAN_DESC"
             required="true"
-            maxlength="34"
+            maxlength="50"
+            class="form-control"
         />
 
         <field
             name="bic"
             type="text"
             label="COM_CLUBORGANISATION_FIELD_BIC"
-            description=""
-            class="inputbox"
-            size="20"
-            maxlength="11"
+            description="COM_CLUBORGANISATION_FIELD_BIC_DESC"
+            required="false"
+            maxlength="50"
+            class="form-control"
         />
 
         <field
             name="begin"
             type="calendar"
             label="COM_CLUBORGANISATION_FIELD_BEGIN"
-            description=""
-            class="inputbox"
+            description="COM_CLUBORGANISATION_FIELD_BEGIN_DESC"
             required="true"
             format="%Y-%m-%d"
+            filter="date"
+            class="form-control"
         />
     </fieldset>
 
@@ -77,10 +68,9 @@
             type="calendar"
             label="COM_CLUBORGANISATION_FIELD_CREATED"
             description=""
-            class="inputbox"
+            filter="user_utc"
             format="%Y-%m-%d %H:%M:%S"
             readonly="true"
-            disabled="true"
         />
 
         <field
@@ -89,7 +79,6 @@
             label="COM_CLUBORGANISATION_FIELD_CREATED_BY"
             description=""
             readonly="true"
-            disabled="true"
         />
 
         <field
@@ -97,10 +86,9 @@
             type="calendar"
             label="COM_CLUBORGANISATION_FIELD_MODIFIED"
             description=""
-            class="inputbox"
+            filter="user_utc"
             format="%Y-%m-%d %H:%M:%S"
             readonly="true"
-            disabled="true"
         />
 
         <field
@@ -109,7 +97,6 @@
             label="COM_CLUBORGANISATION_FIELD_MODIFIED_BY"
             description=""
             readonly="true"
-            disabled="true"
         />
     </fieldset>
 </form>

@@ -2,7 +2,7 @@
 /**
  * @package     ClubOrganisation
  * @subpackage  Administrator
- * @author      Christian Schulz <technik@meinetechnikwelt.rocks>
+ * @author      Christian Schulz
  * @license     GNU General Public License version 3 or later
  */
 
@@ -16,28 +16,25 @@ use Joomla\CMS\Factory;
 use CSOSCD\Component\ClubOrganisation\Administrator\Helper\EncryptionHelper;
 
 /**
- * MembershipBank Table Klasse mit Verschlüsselung
+ * MembershipBank Table mit Verschlüsselung und Datumsvalidierung
+ *
+ * Beim Speichern des allerersten Datensatzes wird der Canary-Wert in
+ * #__extensions gesichert, damit nachfolgende Schlüsselvalidierungen
+ * deterministisch funktionieren.
  *
  * @since  1.0.0
  */
 class MembershipbankTable extends Table
 {
-    /**
-     * Constructor
-     *
-     * @param   DatabaseDriver  $db  Database connector object
-     *
-     * @since   1.0.0
-     */
     public function __construct(DatabaseDriver $db)
     {
         parent::__construct('#__cluborganisation_membershipbanks', 'id', $db);
     }
 
     /**
-     * Überprüft die Datenintegrität
+     * Prüft Datenintegrität inkl. Datumsvalidierung gegen die Mitgliedschaft.
      *
-     * @return  boolean  True bei Erfolg
+     * @return  boolean
      *
      * @since   1.0.0
      */
@@ -58,13 +55,11 @@ class MembershipbankTable extends Table
             return false;
         }
 
-        // Validiere IBAN (nur wenn nicht verschlüsselt)
         if (!$this->isEncrypted($this->iban) && !$this->validateIBAN($this->iban)) {
             $this->setError('COM_CLUBORGANISATION_ERROR_IBAN_INVALID');
             return false;
         }
 
-        // Validiere BIC wenn vorhanden (nur wenn nicht verschlüsselt)
         if (!empty($this->bic) && !$this->isEncrypted($this->bic) && !$this->validateBIC($this->bic)) {
             $this->setError('COM_CLUBORGANISATION_ERROR_BIC_INVALID');
             return false;
@@ -75,88 +70,77 @@ class MembershipbankTable extends Table
             return false;
         }
 
+        // ── Datumsvalidierung gegen die zugehörige Mitgliedschaft ─────────────
+        $db    = $this->getDbo();
+        $query = $db->getQuery(true)
+            ->select([$db->quoteName('begin', 'mbegin'), $db->quoteName('end', 'mend')])
+            ->from($db->quoteName('#__cluborganisation_memberships'))
+            ->where($db->quoteName('id') . ' = ' . (int) $this->membership_id);
+        $db->setQuery($query);
+        $membership = $db->loadObject();
+
+        if ($membership) {
+            $bankBegin = $this->begin;
+            $today     = date('Y-m-d');
+
+            // Neue Bankverbindung: Mitgliedschaft darf nicht beendet sein
+            if (!$this->id && !empty($membership->mend) && $membership->mend < $today) {
+                $this->setError('COM_CLUBORGANISATION_ERROR_BANK_MEMBERSHIP_ENDED');
+                return false;
+            }
+
+            // Beginn nicht vor Mitgliedschaftsbeginn
+            if (!empty($membership->mbegin) && $bankBegin < $membership->mbegin) {
+                $this->setError('COM_CLUBORGANISATION_ERROR_BANK_BEGIN_BEFORE_MEMBERSHIP');
+                return false;
+            }
+
+            // Beginn nicht nach Mitgliedschaftsende
+            if (!empty($membership->mend) && $bankBegin > $membership->mend) {
+                $this->setError('COM_CLUBORGANISATION_ERROR_BANK_BEGIN_AFTER_MEMBERSHIP_END');
+                return false;
+            }
+        }
+        // ─────────────────────────────────────────────────────────────────────
+
         return parent::check();
     }
 
-    /**
-     * Validiert eine IBAN
-     *
-     * @param   string  $iban  Die zu validierende IBAN
-     *
-     * @return  boolean  True wenn gültig
-     *
-     * @since   1.0.0
-     */
     private function validateIBAN($iban)
     {
-        // Entferne Leerzeichen und wandle in Großbuchstaben um
         $iban = strtoupper(str_replace(' ', '', $iban));
-
-        // Prüfe Länge (15-34 Zeichen für IBAN)
         if (strlen($iban) < 15 || strlen($iban) > 34) {
             return false;
         }
-
-        // Prüfe Format: 2 Buchstaben, 2 Ziffern, dann Buchstaben/Ziffern
         if (!preg_match('/^[A-Z]{2}[0-9]{2}[A-Z0-9]+$/', $iban)) {
             return false;
         }
-
-        // IBAN Prüfsummen-Validierung (Modulo 97)
         $checkString = substr($iban, 4) . substr($iban, 0, 4);
-        $checkString = str_split($checkString);
-        $checkSum = '';
-
-        foreach ($checkString as $char) {
-            if (is_numeric($char)) {
-                $checkSum .= $char;
-            } else {
-                // A=10, B=11, ..., Z=35
-                $checkSum .= (ord($char) - 55);
-            }
+        $checkSum    = '';
+        foreach (str_split($checkString) as $char) {
+            $checkSum .= is_numeric($char) ? $char : (ord($char) - 55);
         }
-
-        // Modulo 97 muss 1 ergeben
         return bcmod($checkSum, '97') === '1';
     }
 
-    /**
-     * Validiert einen BIC
-     *
-     * @param   string  $bic  Der zu validierende BIC
-     *
-     * @return  boolean  True wenn gültig
-     *
-     * @since   1.0.0
-     */
     private function validateBIC($bic)
     {
-        // Entferne Leerzeichen und wandle in Großbuchstaben um
         $bic = strtoupper(str_replace(' ', '', $bic));
-
-        // BIC hat 8 oder 11 Zeichen
-        // Format: AAAA BB CC DDD
-        // AAAA = Bankcode (4 Buchstaben)
-        // BB = Ländercode (2 Buchstaben)
-        // CC = Ortscode (2 Buchstaben/Ziffern)
-        // DDD = Filialcode (3 Buchstaben/Ziffern, optional)
         return preg_match('/^[A-Z]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?$/', $bic) === 1;
     }
 
     /**
-     * Method to bind data
-     * Verschlüsselt sensible Daten vor dem Speichern
+     * Verschlüsselt sensible Felder vor dem Speichern.
      *
-     * @param   array  $array   Named array
-     * @param   mixed  $ignore  An optional array or space separated list of properties to ignore
+     * @param   array  $array   Daten
+     * @param   mixed  $ignore  Ignorierte Felder
      *
-     * @return  boolean  True on success
+     * @return  boolean
      *
      * @since   1.0.0
      */
     public function bind($array, $ignore = '')
     {
-        // Hole Encryption Key aus Session
         $encryptionKey = EncryptionHelper::getEncryptionKey();
 
         if (!$encryptionKey) {
@@ -164,8 +148,6 @@ class MembershipbankTable extends Table
             return false;
         }
 
-        // Verschlüssele sensible Daten
-        // Wichtig: Prüfe ob Daten nicht leer sind und nicht bereits verschlüsselt
         if (isset($array['accountname']) && !empty($array['accountname'])) {
             if (!$this->isEncrypted($array['accountname'])) {
                 $array['accountname'] = EncryptionHelper::encrypt($array['accountname'], $encryptionKey);
@@ -188,13 +170,12 @@ class MembershipbankTable extends Table
     }
 
     /**
-     * Method to load a row
-     * Entschlüsselt sensible Daten nach dem Laden
+     * Entschlüsselt sensible Felder nach dem Laden.
      *
-     * @param   mixed    $keys   An optional primary key value to load the row by
-     * @param   boolean  $reset  True to reset the default values before loading the new row
+     * @param   mixed    $keys   Primärschlüssel
+     * @param   boolean  $reset  Standardwerte zurücksetzen
      *
-     * @return  boolean  True if successful, false otherwise
+     * @return  boolean
      *
      * @since   1.0.0
      */
@@ -206,15 +187,12 @@ class MembershipbankTable extends Table
             $encryptionKey = EncryptionHelper::getEncryptionKey();
 
             if (!$encryptionKey) {
-                // Wenn kein Key vorhanden, setze Platzhalter
                 $this->accountname = '***';
-                $this->iban = '***';
-                $this->bic = '***';
+                $this->iban        = '***';
+                $this->bic         = '***';
             } else {
-                // Entschlüssele die Daten
                 $this->accountname = EncryptionHelper::decrypt($this->accountname, $encryptionKey);
-                $this->iban = EncryptionHelper::decrypt($this->iban, $encryptionKey);
-                
+                $this->iban        = EncryptionHelper::decrypt($this->iban, $encryptionKey);
                 if (!empty($this->bic)) {
                     $this->bic = EncryptionHelper::decrypt($this->bic, $encryptionKey);
                 }
@@ -225,53 +203,15 @@ class MembershipbankTable extends Table
     }
 
     /**
-     * Prüft ob ein String bereits verschlüsselt ist (Base64)
+     * Speichert den Datensatz und setzt ggf. den Canary beim ersten Eintrag.
      *
-     * @param   string  $data  Der zu prüfende String
+     * Der Canary wird genau einmal angelegt: wenn noch kein Canary in
+     * #__extensions vorhanden ist (= kein Bankdatensatz existierte bisher).
+     * Bei späteren Speichervorgängen bleibt der Canary unverändert.
      *
-     * @return  boolean  True wenn verschlüsselt
+     * @param   boolean  $updateNulls  Null-Werte ebenfalls speichern
      *
-     * @since   1.0.0
-     */
-    /**
-     * Prüft ob Daten bereits verschlüsselt sind
-     *
-     * @param   string  $data  Die zu prüfenden Daten
-     *
-     * @return  boolean  True wenn bereits verschlüsselt
-     *
-     * @since   1.0.0
-     */
-    private function isEncrypted($data)
-    {
-        if (empty($data)) {
-            return false;
-        }
-
-        // Verschlüsselte Daten haben ein spezielles Präfix
-        // oder sind deutlich länger als Klartextdaten
-        // Eine IBAN ist max 34 Zeichen, verschlüsselt deutlich länger
-        if (strlen($data) > 100) {
-            return true;
-        }
-
-        // Prüfe ob es ein gültiges Base64 mit genug Länge ist
-        $decoded = base64_decode($data, true);
-        if ($decoded === false) {
-            return false;
-        }
-
-        // Wenn der dekodierte String wieder Base64-kodiert identisch ist
-        // UND deutlich länger als normale Bankdaten, ist es wahrscheinlich verschlüsselt
-        return (base64_encode($decoded) === $data && strlen($data) > 50);
-    }
-
-    /**
-     * Method to store a row
-     *
-     * @param   boolean  $updateNulls  True to update null values
-     *
-     * @return  boolean  True on success
+     * @return  boolean
      *
      * @since   1.0.0
      */
@@ -281,13 +221,41 @@ class MembershipbankTable extends Table
         $user = Factory::getApplication()->getIdentity();
 
         if (!$this->id) {
-            $this->created = $date->toSql();
+            $this->created    = $date->toSql();
             $this->created_by = $user->id;
         }
 
-        $this->modified = $date->toSql();
+        $this->modified    = $date->toSql();
         $this->modified_by = $user->id;
 
-        return parent::store($updateNulls);
+        $result = parent::store($updateNulls);
+
+        // Canary beim ersten Bankdatensatz setzen
+        if ($result && EncryptionHelper::getStoredCanary() === null) {
+            $key = EncryptionHelper::getEncryptionKey();
+            if ($key) {
+                EncryptionHelper::saveCanary($key);
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Prüft ob ein Wert bereits verschlüsselt (Base64-kodiert, ausreichend lang) ist.
+     *
+     * @param   string  $data  Zu prüfender Wert
+     *
+     * @return  boolean
+     *
+     * @since   1.0.0
+     */
+    private function isEncrypted($data)
+    {
+        if (empty($data) || strlen($data) <= 50) {
+            return false;
+        }
+        $decoded = base64_decode($data, true);
+        return $decoded !== false && base64_encode($decoded) === $data;
     }
 }
