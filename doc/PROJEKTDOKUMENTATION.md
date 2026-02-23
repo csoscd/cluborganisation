@@ -1,12 +1,12 @@
-# ClubOrganisation - Technische Dokumentation
+# ClubOrganisation – Technische Dokumentation
 
-**Version:** 1.1.0  
+**Version:** 2.0.0  
 **Joomla:** 5.x / 6.x  
 **PHP:** 8.1+
 
 ---
 
-## 🏗️ Architektur
+## Architektur
 
 ### MVC-Pattern
 
@@ -18,43 +18,19 @@ Request → Controller → Model → Database
                    View → Template → Response
 ```
 
-**Komponenten:**
-- **Model:** Geschäftslogik, Datenzugriff, Validierung
-- **View:** Daten für Template vorbereiten, State setzen
-- **Controller:** Request-Steuerung, Aktionen, Redirects
-- **Template:** HTML-Ausgabe, Formulare, Listen
+Die Komponente ist in drei Applikationen aufgeteilt:
 
-### Dependency Injection
-
-**Service Provider:** `admin/services/provider.php`
-
-```php
-use Joomla\CMS\Extension\Service\Provider\ComponentDispatcherFactory;
-use Joomla\CMS\Extension\Service\Provider\MVCFactory;
-use Joomla\CMS\Extension\Service\Provider\CategoryFactory;
-
-public function register(Container $container): void
-{
-    $container->registerServiceProvider(new CategoryFactory(...));
-    $container->registerServiceProvider(new MVCFactory(...));
-    $container->registerServiceProvider(new ComponentDispatcherFactory(...));
-    
-    $container->set(
-        ComponentInterface::class,
-        function (Container $container) {
-            $component = new ClubOrganisationComponent($container->get(ComponentDispatcherFactoryInterface::class));
-            $component->setMVCFactory($container->get(MVCFactoryInterface::class));
-            return $component;
-        }
-    );
-}
-```
+| Applikation | Namespace-Präfix | Zweck |
+|---|---|---|
+| `admin/` | `Administrator` | Backend-Verwaltung |
+| `api/` | `Api` | REST-API |
+| `site/` | `Site` | Frontend-Darstellung |
 
 ### Namespace-Struktur
 
 ```
 CSOSCD\Component\ClubOrganisation\
-├── Administrator\           # Backend
+├── Administrator\
 │   ├── Controller\
 │   ├── Extension\
 │   ├── Field\
@@ -62,692 +38,345 @@ CSOSCD\Component\ClubOrganisation\
 │   ├── Model\
 │   ├── Table\
 │   └── View\
-└── Site\                   # Frontend
+├── Api\
+│   ├── Controller\
+│   ├── Extension\
+│   └── Model\
+└── Site\
     ├── Controller\
     ├── Extension\
     ├── Model\
     └── View\
 ```
 
+### Dependency Injection
+
+Jede Applikation hat einen eigenen Service Provider (`services/provider.php`), der MVCFactory und ComponentDispatcherFactory registriert.
+
+```php
+// admin/services/provider.php (vereinfacht)
+$container->registerServiceProvider(new MVCFactory('\\CSOSCD\\Component\\ClubOrganisation'));
+$container->registerServiceProvider(new ComponentDispatcherFactory('\\CSOSCD\\Component\\ClubOrganisation'));
+```
+
 ---
 
-## 🗄️ Datenbank-Design
+## Verschlüsselung (EncryptionHelper)
 
-### ER-Diagramm (vereinfacht)
+### Methoden
+
+```php
+// Verschlüsseln
+EncryptionHelper::encrypt(string $plaintext, string $key): string
+
+// Entschlüsseln
+EncryptionHelper::decrypt(string $ciphertext, string $key): string|false
+
+// Canary speichern (beim ersten Bankdatensatz)
+EncryptionHelper::saveCanary(string $key): void
+
+// Canary validieren
+EncryptionHelper::verifyKey(string $key): bool
+
+// Gespeicherten Canary lesen
+EncryptionHelper::getStoredCanary(): string|null
+```
+
+### Canary-Mechanismus
+
+```
+Konstante: CLUBORG_KEY_CHECK_v1
+    ↓
+verschlüsselt mit aktivem Schlüssel
+    ↓
+gespeichert in #__extensions.params['encryption_canary']
+
+Validierung:
+    gespeicherter Canary + Schlüssel
+    → decrypt()
+    → Vergleich mit CLUBORG_KEY_CHECK_v1
+    → true / false
+```
+
+Der Canary wird geschrieben beim:
+- Ersten Aufruf von `MembershipbankTable::store()` (idempotent)
+- Erfolgreicher Key Rotation (`MembershipbanksModel::reencryptAll()`)
+
+### Schlüssel-Lifecycle
+
+```
+1. Admin gibt Schlüssel in Entsperr-Maske ein
+2. Schlüssel wird mit EncryptionHelper::verifyKey() geprüft
+3. Bei Erfolg: in PHP-Session speichern
+4. Zugriff auf Bankdaten: Schlüssel aus Session lesen
+5. Sperren: Session-Eintrag löschen
+6. Session-Ende: automatisch gelöscht
+```
+
+---
+
+## REST-API
+
+### Routing
+
+Das Webservices-Plugin (`plg_webservices_cluborganisation`) registriert die Route:
+
+```php
+$router->createCRUDRoutes(
+    'v1/cluborganisation/members',
+    'members',
+    ['component' => 'com_cluborganisation']
+);
+```
+
+`createCRUDRoutes()` mappt GET (Collection) auf `MembersController::displayList()`.
+
+### MembersController
+
+`displayList()` überschreibt die Methode des `ApiController`, um die Joomla-View-Schicht zu umgehen (es gibt keine `jsonapi`-View). Ablauf:
+
+```
+1. Authentifizierung prüfen ($app->getIdentity())
+2. Berechtigung prüfen (core.manage on com_cluborganisation)
+3. Parameter aus Input lesen
+4. ExportModel::getMembers($options) aufrufen
+5. JSON direkt ausgeben (header() + echo + $app->close())
+```
+
+### ExportModel
+
+Eigenständige Klasse (kein Joomla-Basis-Model), holt DB-Verbindung via `Factory::getContainer()`:
+
+```
+Personen laden (LEFT JOIN salutations)
+    ↓
+Mitgliedschaften laden (ggf. aktiv-gefiltert)
+    ↓
+Bankdaten laden + entschlüsseln (ggf. aktiv-gefiltert)
+    ↓
+Personen ohne passende Mitgliedschaft bei active_memberships=1 ausschließen
+    ↓
+Array-Ausgabe
+```
+
+---
+
+## Datenbank-Design
+
+### ER-Diagramm
 
 ```
 persons (1) ──< (n) memberships (n) >── (1) membershiptypes
    │                    │
-   │                    │
-   │             (1) ──< (0..1) membershipbanks
+   │             (1) ──< (0..n) membershipbanks
    │
-(1) >── (0..1) salutations
+(n) >── (1) salutations
 ```
 
-### Tabellen-Details
+### Wichtige SQL-Patterns
 
-#### 1. persons
-
-**Primärschlüssel:** `id`
-
-**Felder:**
-- **Stammdaten:** salutation, firstname, middlename, lastname, birthname
-- **Kontakt:** address, city, zip, country, telephone, mobile, email
-- **Mitgliedschaft:** member_no, entry_year, exit_year
-- **System:** user_id, birthday, deceased, image, active
-- **Audit:** created_by, created, modified_by, modified
-
-**Besonderheiten:**
-- `entry_year`: Berechnet aus MIN(memberships.begin)
-- `exit_year`: Berechnet aus MAX(memberships.end)
-- `active`: 0 = anonymisiert, 1 = aktiv
-- `member_no`: Eindeutig (UNIQUE)
-
-**Indizes:**
+**Aktive Mitgliedschaft:**
 ```sql
-PRIMARY KEY (id)
-UNIQUE KEY member_no (member_no)
-KEY user_id (user_id)
-KEY active (active)
-KEY entry_year (entry_year)
-KEY exit_year (exit_year)
+WHERE m.begin <= CURDATE()
+  AND (m.end IS NULL OR m.end >= CURDATE())
 ```
 
-#### 2. memberships
-
-**Primärschlüssel:** `id`
-
-**Felder:**
-- **Verknüpfungen:** person_id, type (→ membershiptypes)
-- **Zeitraum:** begin, end
-- **Beitrag:** fee_amount
-- **Audit:** created_by, created, modified_by, modified
-
-**Besonderheiten:**
-- Zeitraum-Überschneidungsprüfung im Model
-- Maximal eine aktive Mitgliedschaft (end IS NULL) pro Person
-- Soft-Delete möglich
-
-**Indizes:**
+**Aktive Bankverbindung:**
 ```sql
-PRIMARY KEY (id)
-KEY person_id (person_id)
-KEY type (type)
-KEY begin (begin)
-KEY end (end)
+WHERE b.begin <= CURDATE()
 ```
 
-#### 3. membershipbanks
-
-**Primärschlüssel:** `id`
-
-**Felder:**
-- **Verknüpfung:** membership_id
-- **Verschlüsselt:** accountname, iban, bic (AES-256-CBC)
-- **Audit:** created_by, created, modified_by, modified
-
-**Besonderheiten:**
-- Alle sensiblen Felder verschlüsselt
-- Schlüssel nie in Datenbank
-- Session-basierter Zugriff
-
-**Indizes:**
+**Mitglied mit aktiver Mitgliedschaft (für DSGVO-Schutz):**
 ```sql
-PRIMARY KEY (id)
-KEY membership_id (membership_id)
-```
-
-#### 4. salutations
-
-**Primärschlüssel:** `id`
-
-**Felder:**
-- **Stammdaten:** title, ordering, state
-
-**Standard-Einträge:**
-1. Herr
-2. Frau
-3. Divers
-
-#### 5. membershiptypes
-
-**Primärschlüssel:** `id`
-
-**Felder:**
-- **Stammdaten:** title, description, ordering, state
-
-**Standard-Einträge:**
-1. Einzelmitglied
-2. Einzelmitglied (reduziert)
-3. Familienmitglied (zahlend)
-4. Familienmitglied
-
----
-
-## 🔐 Sicherheit
-
-### Verschlüsselung
-
-**Methode:** AES-256-CBC (Sodium)
-
-**EncryptionHelper.php:**
-```php
-use SodiumException;
-
-class EncryptionHelper
-{
-    public static function encrypt(string $data, string $key): string
-    {
-        $nonce = random_bytes(SODIUM_CRYPTO_SECRETBOX_NONCEBYTES);
-        $encrypted = sodium_crypto_secretbox($data, $nonce, $key);
-        return base64_encode($nonce . $encrypted);
-    }
-    
-    public static function decrypt(string $encrypted, string $key): string
-    {
-        $decoded = base64_decode($encrypted);
-        $nonce = substr($decoded, 0, SODIUM_CRYPTO_SECRETBOX_NONCEBYTES);
-        $ciphertext = substr($decoded, SODIUM_CRYPTO_SECRETBOX_NONCEBYTES);
-        return sodium_crypto_secretbox_open($ciphertext, $nonce, $key);
-    }
-}
-```
-
-**Verwendung:**
-```php
-// Speichern
-$encrypted = EncryptionHelper::encrypt($plaintext, $sessionKey);
-$table->iban = $encrypted;
-$table->store();
-
-// Laden
-$encrypted = $table->iban;
-$plaintext = EncryptionHelper::decrypt($encrypted, $sessionKey);
-```
-
-**Schlüssel-Management:**
-- Schlüssel in Session gespeichert
-- Nie in Datenbank
-- Eingabe bei jedem Zugriff erforderlich
-- 256-Bit Schlüssel
-
-### Validierung
-
-**E-Mail:**
-```php
-use Joomla\CMS\Filter\InputFilter;
-
-$filter = InputFilter::getInstance();
-$email = $filter->clean($input, 'string');
-
-if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    throw new \Exception('Invalid email format');
-}
-```
-
-**Zeitraum-Überschneidung:**
-```php
-// In MembershipModel::validate()
-$db = $this->getDatabase();
-$query = $db->getQuery(true);
-
-$query->select('COUNT(*)')
-    ->from($db->quoteName('#__cluborganisation_memberships'))
-    ->where($db->quoteName('person_id') . ' = ' . $db->quote($personId))
-    ->where($db->quoteName('id') . ' != ' . $db->quote($id))
-    ->where('(' .
-        '(' . $db->quoteName('begin') . ' <= ' . $db->quote($end) . ' AND ' .
-         $db->quoteName('end') . ' >= ' . $db->quote($begin) . ')' .
-        ' OR ' .
-        '(' . $db->quoteName('end') . ' IS NULL AND ' .
-         $db->quoteName('begin') . ' <= ' . $db->quote($end) . ')' .
-    ')');
-
-if ($db->setQuery($query)->loadResult() > 0) {
-    throw new \Exception('Membership period overlaps');
-}
-```
-
-### SQL-Injection-Schutz
-
-**Prepared Statements:**
-```php
-$query = $db->getQuery(true);
-$query->select('*')
-    ->from($db->quoteName('#__cluborganisation_persons'))
-    ->where($db->quoteName('id') . ' = ' . $db->quote($id));
-
-$db->setQuery($query);
-$result = $db->loadObject();
-```
-
-**Niemals:**
-```php
-// FALSCH - Anfällig für SQL Injection
-$query = "SELECT * FROM persons WHERE id = " . $id;
-```
-
-### XSS-Schutz
-
-**Output Escaping:**
-```php
-// In Templates
-<?php echo $this->escape($item->firstname); ?>
-<?php echo htmlspecialchars($item->email, ENT_QUOTES, 'UTF-8'); ?>
-```
-
-### CSRF-Schutz
-
-**Tokens:**
-```php
-// In Templates
-<?php echo HTMLHelper::_('form.token'); ?>
-
-// Im Controller
-$this->checkToken() or jexit(Text::_('JINVALID_TOKEN'));
-```
-
-### ACL
-
-**Berechtigungs-Prüfung:**
-```php
-$user = Factory::getApplication()->getIdentity();
-
-// Komponenten-Level
-if (!$user->authorise('core.manage', 'com_cluborganisation')) {
-    throw new \Exception('Access denied');
-}
-
-// Asset-Level
-if (!$user->authorise('core.edit', 'com_cluborganisation.person.' . $id)) {
-    throw new \Exception('Access denied');
-}
+WHERE (
+    SELECT COUNT(*) FROM #__cluborganisation_memberships m
+    WHERE m.person_id = p.id AND m.end IS NULL
+) = 0
 ```
 
 ---
 
-## 📊 Daten-Flow
+## Wichtige Code-Patterns
 
-### Backend: Person bearbeiten
-
-```
-1. Request: index.php?option=com_cluborganisation&view=person&id=123
-
-2. Controller:
-   - PersonController::edit()
-   - Prüft ACL (core.edit)
-   - Lädt Model
-
-3. Model:
-   - PersonModel::getItem(123)
-   - Lädt Datensatz aus DB
-   - Füllt Form-Data
-
-4. View:
-   - PersonHtmlView::display()
-   - Rendert Formular
-   - Lädt Template
-
-5. Template:
-   - person/edit.php
-   - Zeigt Formular an
-   - CSRF Token
-
-6. POST (Speichern):
-   - PersonController::save()
-   - Prüft Token
-   - Validiert Daten
-   - PersonModel::save()
-   - Redirect zur Liste
-
-7. Response:
-   - Success Message
-   - Redirect zu Persons-Liste
-```
-
-### Frontend: Aktive Mitglieder
-
-```
-1. Request: index.php?option=com_cluborganisation&view=activemembers
-
-2. Controller:
-   - DisplayController::display()
-   - Routing zu View
-
-3. Model:
-   - ActivemembersModel::getItems()
-   - populateState() - Limit, Ordering lesen
-   - getListQuery() - SQL Query bauen
-   - Subqueries für Entry/Exit Year
-
-4. View:
-   - ActivemembersHtmlView::display()
-   - Items laden
-   - Pagination vorbereiten
-
-5. Template:
-   - activemembers/default.php
-   - Tabelle rendern
-   - Spalten nach Params
-   - Pagination
-
-6. Response:
-   - HTML-Output
-   - Tabelle mit Mitgliedern
-   - Pagination-Controls
-```
-
----
-
-## 🔧 Wichtige Code-Patterns
-
-### Pattern 1: ListModel mit PopulateState
+### ListModel mit populateState
 
 ```php
-class MyModel extends ListModel
-{
-    protected function populateState($ordering = null, $direction = null)
-    {
-        $app = Factory::getApplication();
-        $params = $app->getParams();
-        $this->setState('params', $params);
-        
-        // Limit lesen und speichern (mit Session)
-        $limit = $app->getUserStateFromRequest(
-            'global.list.limit',
-            'limit',
-            $params->get('display_num', 20),
-            'uint'
-        );
-        $this->setState('list.limit', $limit);
-        
-        // Start-Position
-        $limitstart = $app->input->get('limitstart', 0, 'uint');
-        $this->setState('list.start', $limitstart);
-        
-        // Ordering
-        $this->setState('list.ordering', $params->get('orderby_pri', 'lastname'));
-        $this->setState('list.direction', $params->get('order_dir', 'ASC'));
-        
-        parent::populateState($ordering, $direction);
-    }
-    
-    protected function getListQuery()
-    {
-        $db = $this->getDatabase();
-        $query = $db->getQuery(true);
-        
-        // SELECT, FROM, WHERE, ORDER
-        
-        return $query;
-    }
-}
-```
-
-### Pattern 2: Subquery für Entry/Exit Year
-
-```php
-// Entry Year (MIN)
-$subQueryEntry = $db->getQuery(true);
-$subQueryEntry->select('MIN(m2.begin)')
-    ->from($db->quoteName('#__cluborganisation_memberships', 'm2'))
-    ->where('m2.person_id = p.id');
-
-// Exit Year (MAX)
-$subQueryExit = $db->getQuery(true);
-$subQueryExit->select('MAX(m3.end)')
-    ->from($db->quoteName('#__cluborganisation_memberships', 'm3'))
-    ->where('m3.person_id = p.id')
-    ->where('m3.end IS NOT NULL');
-
-// In Query verwenden
-$query->select([
-    'p.*',
-    '(' . $subQueryEntry . ') AS first_membership_begin',
-    'YEAR((' . $subQueryEntry . ')) AS entry_year',
-    '(' . $subQueryExit . ') AS last_membership_end',
-    'YEAR((' . $subQueryExit . ')) AS exit_year'
-])
-->from($db->quoteName('#__cluborganisation_persons', 'p'));
-```
-
-### Pattern 3: Active Membership Check
-
-```php
-// Subquery für aktive Mitgliedschaften
-$activeSubQuery = $db->getQuery(true);
-$activeSubQuery->select('COUNT(*)')
-    ->from($db->quoteName('#__cluborganisation_memberships', 'm4'))
-    ->where('m4.person_id = p.id')
-    ->where('m4.end IS NULL');
-
-// In WHERE verwenden
-->where('(' . $activeSubQuery . ') = 0')  // Keine aktiven Mitgliedschaften
-```
-
-### Pattern 4: Transaction-Safe Operations
-
-```php
-public function criticalOperation($data)
-{
-    $db = $this->getDatabase();
-    
-    try {
-        $db->transactionStart();
-        
-        // Operation 1
-        $query1 = $db->getQuery(true);
-        // ... build query
-        $db->setQuery($query1);
-        $db->execute();
-        
-        // Operation 2
-        $query2 = $db->getQuery(true);
-        // ... build query
-        $db->setQuery($query2);
-        $db->execute();
-        
-        $db->transactionCommit();
-        
-        return ['success' => true];
-        
-    } catch (\Exception $e) {
-        $db->transactionRollback();
-        
-        return [
-            'success' => false,
-            'error' => $e->getMessage()
-        ];
-    }
-}
-```
-
-### Pattern 5: Custom Field Type
-
-```php
-class YearrangeField extends ListField
-{
-    protected $type = 'Yearrange';
-
-    protected function getOptions()
-    {
-        $options = [];
-        $currentYear = (int) date('Y');
-        $startYear = $currentYear - 50;
-        
-        for ($year = $currentYear; $year >= $startYear; $year--) {
-            $options[] = HTMLHelper::_('select.option', $year, $year);
-        }
-        
-        return array_merge(parent::getOptions(), $options);
-    }
-}
-```
-
----
-
-## 📝 Template-Strukturen
-
-### Backend-Template (Liste)
-
-**Struktur mit Filter, Sortierung, Pagination:**
-```php
-<?php
-defined('_JEXEC') or die;
-use Joomla\CMS\HTML\HTMLHelper;
-use Joomla\CMS\Language\Text;
-use Joomla\CMS\Router\Route;
-
-$listOrder = $this->escape($this->state->get('list.ordering'));
-$listDirn  = $this->escape($this->state->get('list.direction'));
-$saveOrder = $listOrder == 'a.ordering';
-?>
-
-<form action="<?php echo Route::_('index.php?option=com_cluborganisation&view=persons'); ?>" 
-      method="post" 
-      name="adminForm" 
-      id="adminForm">
-    
-    <!-- Filter -->
-    <?php echo $this->filterForm->renderField('search'); ?>
-    
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th width="1%">
-                    <?php echo HTMLHelper::_('grid.checkall'); ?>
-                </th>
-                <th>
-                    <?php echo HTMLHelper::_('searchtools.sort', 'JGRID_HEADING_ID', 'a.id', $listDirn, $listOrder); ?>
-                </th>
-                <!-- Weitere Spalten -->
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($this->items as $i => $item) : ?>
-                <tr>
-                    <td>
-                        <?php echo HTMLHelper::_('grid.id', $i, $item->id); ?>
-                    </td>
-                    <td>
-                        <a href="<?php echo $editLink; ?>">
-                            <?php echo $this->escape($item->title); ?>
-                        </a>
-                    </td>
-                    <!-- Weitere Zellen -->
-                </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
-    
-    <!-- Pagination -->
-    <?php echo $this->pagination->getListFooter(); ?>
-    
-    <!-- Hidden Fields -->
-    <input type="hidden" name="task" value="" />
-    <input type="hidden" name="boxchecked" value="0" />
-    <?php echo HTMLHelper::_('form.token'); ?>
-</form>
-```
-
-### Frontend-Template (Liste)
-
-**Struktur mit Pagination:**
-```php
-<?php
-defined('_JEXEC') or die;
-use Joomla\CMS\HTML\HTMLHelper;
-use Joomla\CMS\Language\Text;
-
-$params = $this->params;
-?>
-
-<div class="cluborganisation-view">
-    <h1><?php echo Text::_('COM_CLUBORGANISATION_TITLE'); ?></h1>
-
-    <form action="<?php echo htmlspecialchars(\Joomla\CMS\Uri\Uri::getInstance()->toString()); ?>" 
-          method="post" 
-          name="adminForm" 
-          id="adminForm">
-    
-        <?php if (empty($this->items)) : ?>
-            <div class="alert alert-info">
-                <?php echo Text::_('COM_CLUBORGANISATION_NO_ITEMS'); ?>
-            </div>
-        <?php else : ?>
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <?php if ($params->get('show_member_no', 1)) : ?>
-                            <th><?php echo Text::_('COM_CLUBORGANISATION_FIELD_MEMBER_NO'); ?></th>
-                        <?php endif; ?>
-                        <!-- Weitere Spalten basierend auf Params -->
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($this->items as $item) : ?>
-                        <tr>
-                            <?php if ($params->get('show_member_no', 1)) : ?>
-                                <td><?php echo $this->escape($item->member_no); ?></td>
-                            <?php endif; ?>
-                            <!-- Weitere Zellen -->
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-
-            <?php echo $this->pagination->getListFooter(); ?>
-        <?php endif; ?>
-        
-        <input type="hidden" name="task" value="" />
-        <input type="hidden" name="limitstart" value="" />
-        <?php echo HTMLHelper::_('form.token'); ?>
-    </form>
-</div>
-```
-
-**Wichtig für Pagination:**
-- `<form>` Element umschließt Tabelle und Pagination
-- Hidden Fields: `task`, `limitstart`
-- CSRF Token
-- `populateState()` im Model
-
----
-
-## 📝 Best Practices
-
-### 1. Immer Escapen
-
-```php
-// Im Template
-<?php echo $this->escape($item->name); ?>
-<?php echo htmlspecialchars($item->email, ENT_QUOTES, 'UTF-8'); ?>
-```
-
-### 2. Prepared Statements
-
-```php
-// RICHTIG
-$query->where($db->quoteName('id') . ' = ' . $db->quote($id));
-
-// FALSCH
-$query->where('id = ' . $id);
-```
-
-### 3. ACL prüfen
-
-```php
-// Vor kritischen Operationen
-$user = Factory::getApplication()->getIdentity();
-if (!$user->authorise('core.edit', 'com_cluborganisation.person.' . $id)) {
-    throw new \Exception(Text::_('JLIB_APPLICATION_ERROR_EDIT_NOT_PERMITTED'));
-}
-```
-
-### 4. CSRF Token
-
-```php
-// Im Formular
-<?php echo HTMLHelper::_('form.token'); ?>
-
-// Im Controller
-$this->checkToken() or jexit(Text::_('JINVALID_TOKEN'));
-```
-
-### 5. Error Handling
-
-```php
-try {
-    // Operation
-} catch (\Exception $e) {
-    $this->setMessage($e->getMessage(), 'error');
-    $this->setRedirect($returnUrl);
-    return false;
-}
-```
-
-### 6. populateState() für ListModels
-
-```php
-// Immer implementieren
 protected function populateState($ordering = null, $direction = null)
 {
-    // Params, Limit, Start, Ordering setzen
+    $app    = Factory::getApplication();
+    $params = $app->getParams();
+    $this->setState('params', $params);
+
+    $limit = $app->getUserStateFromRequest(
+        'global.list.limit', 'limit',
+        $params->get('display_num', 20), 'uint'
+    );
+    $this->setState('list.limit', $limit);
+    $this->setState('list.start', $app->input->get('limitstart', 0, 'uint'));
+    $this->setState('list.ordering', $params->get('orderby_pri', 'lastname'));
+    $this->setState('list.direction', $params->get('order_dir', 'ASC'));
+
     parent::populateState($ordering, $direction);
 }
 ```
 
-### 7. Subqueries statt JOINs
+### Transaction-Safe Operation
 
 ```php
-// Bevorzugt für berechnete Werte
-$subQuery = $db->getQuery(true);
-$subQuery->select('COUNT(*)')...;
+public function criticalOperation(): bool
+{
+    $db = $this->getDatabase();
+    try {
+        $db->transactionStart();
+        // ... Operationen ...
+        $db->transactionCommit();
+        return true;
+    } catch (\Exception $e) {
+        $db->transactionRollback();
+        $this->setError($e->getMessage());
+        return false;
+    }
+}
+```
 
-$query->select('(' . $subQuery . ') AS count');
+### Subquery für Entry/Exit Year
+
+```php
+$subQueryEntry = $db->getQuery(true)
+    ->select('MIN(m2.begin)')
+    ->from($db->quoteName('#__cluborganisation_memberships', 'm2'))
+    ->where('m2.person_id = p.id');
+
+$query->select('YEAR((' . $subQueryEntry . ')) AS entry_year');
+```
+
+### Prepared Statements
+
+```php
+// Richtig
+$query->where($db->quoteName('id') . ' = ' . $db->quote($id));
+
+// Falsch
+$query->where('id = ' . $id);
 ```
 
 ---
 
-**Stand:** Februar 2026  
-**Version:** 1.1.0
+## Request-Flow
+
+### Backend: Person bearbeiten
+
+```
+GET index.php?option=com_cluborganisation&view=person&id=42
+    → PersonController::display()
+    → PersonModel::getItem(42)
+    → SQL: SELECT * FROM persons WHERE id=42
+    → Person/HtmlView::display()
+    → person/edit.php (Formular)
+    → Response: HTML
+
+POST (Speichern)
+    → PersonController::save()
+    → $this->checkToken()
+    → PersonModel::save()
+    → PersonTable::check() + store()
+    → Redirect zur Liste
+```
+
+### API: GET /members
+
+```
+GET /api/index.php/v1/cluborganisation/members
+    → ApiApplication::dispatch()
+    → PlgWebservicesCluborganisation::onBeforeApiRoute() (Route registriert)
+    → MembersController::displayList()
+    → Auth + Berechtigungsprüfung
+    → ExportModel::getMembers($options)
+    → SQL: persons + memberships + membershipbanks
+    → JSON: echo + $app->close()
+```
+
+---
+
+## Template-Struktur
+
+### Backend Liste (Grundstruktur)
+
+```php
+<form action="<?php echo Route::_('...'); ?>" method="post" name="adminForm">
+    <?php echo $this->filterForm->renderField('search'); ?>
+    <table class="table">
+        <thead>
+            <tr>
+                <th><?php echo HTMLHelper::_('grid.checkall'); ?></th>
+                <th><?php echo HTMLHelper::_('searchtools.sort', 'Label', 'a.field', $listDirn, $listOrder); ?></th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($this->items as $i => $item): ?>
+                <tr>
+                    <td><?php echo HTMLHelper::_('grid.id', $i, $item->id); ?></td>
+                    <td><?php echo $this->escape($item->title); ?></td>
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+    <?php echo $this->pagination->getListFooter(); ?>
+    <input type="hidden" name="task" value="">
+    <input type="hidden" name="boxchecked" value="0">
+    <?php echo HTMLHelper::_('form.token'); ?>
+</form>
+```
+
+### Frontend Liste (Pagination)
+
+Für funktionierende Pagination müssen zwingend enthalten sein:
+- `<form>` umschließt Tabelle + Pagination
+- Hidden Fields: `task`, `limitstart`
+- CSRF-Token
+- `populateState()` im Model implementiert
+
+---
+
+## Sicherheit
+
+### Checkliste
+
+| Maßnahme | Implementierung |
+|---|---|
+| XSS | `$this->escape()` / `htmlspecialchars()` in allen Templates |
+| SQL-Injection | `$db->quote()` / `$db->quoteName()` überall |
+| CSRF | `HTMLHelper::_('form.token')` + `$this->checkToken()` |
+| ACL | `$user->authorise()` vor kritischen Aktionen |
+| Verschlüsselung | AES-256-CBC via EncryptionHelper |
+| Schlüssel | Nur in PHP-Session, nie in DB oder Logs |
+| API-Auth | Joomla API-Token, Berechtigungsprüfung im Controller |
+
+---
+
+## DSGVO-Implementierung
+
+### Anonymisierungs-Felder
+
+| Feld | Anonymisierter Wert |
+|---|---|
+| `firstname` | `Anonymisiert` |
+| `lastname` | `Person [ID]` |
+| `email` | `anonymisiert_[ID]@deleted.local` |
+| `birthday` | `1970-01-01` |
+| `address`, `telephone`, `mobile` | Leerstring |
+| `active` | `0` |
+| Bankdaten | Vollständig gelöscht |
+
+### Schutz vor falscher Anonymisierung
+
+```sql
+-- Prüfung: hat die Person aktive Mitgliedschaften?
+SELECT COUNT(*) FROM #__cluborganisation_memberships
+WHERE person_id = :id AND end IS NULL
+-- Muss 0 ergeben, sonst Fehler
+```
+
+---
+
+**Stand:** Februar 2026 · **Version:** 2.0.0

@@ -6,7 +6,7 @@
     <license>GNU General Public License version 3 or later</license>
     <authorEmail>technik@meinetechnikwelt.rocks</authorEmail>
     <authorUrl>https://www.meinetechnikwelt.rocks</authorUrl>
-    <version>1.9.0</version>
+    <version>2.0.0</version>
     <description>COM_CLUBORGANISATION_XML_DESCRIPTION</description>
     <namespace path="src">CSOSCD\Component\ClubOrganisation</namespace>
 
@@ -66,11 +66,19 @@
         </languages>
     </administration>
 
+    <!-- API files (Joomla REST-API Applikation) -->
+    <api>
+        <files folder="api">
+            <folder>services</folder>
+            <folder>src</folder>
+        </files>
+    </api>
+
     <!-- Site files -->
     <files folder="site">
         <folder>src</folder>
         <folder>tmpl</folder>
-	<folder>services</folder>
+        <folder>services</folder>
     </files>
 
     <languages folder="site/language">
