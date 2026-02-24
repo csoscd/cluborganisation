@@ -1,6 +1,6 @@
 # ClubOrganisation – Technische Dokumentation
 
-**Version:** 2.0.0  
+**Version:** 2.1.0  
 **Joomla:** 5.x / 6.x  
 **PHP:** 8.1+
 
@@ -158,6 +158,37 @@ Personen ohne passende Mitgliedschaft bei active_memberships=1 ausschließen
     ↓
 Array-Ausgabe
 ```
+
+---
+
+## Statistik (neu in 2.1.0)
+
+### Architektur
+
+Analog zur `Feereport`-Ansicht: kein eigener Controller (Joomla-Default-Dispatch), Model `StatisticsModel` erbt von `BaseDatabaseModel`.
+
+### Datenabfragen
+
+Alle Stichtagsabfragen folgen dem Schema:
+
+```sql
+-- Aktive Mitglieder zum Stichtag
+SELECT COUNT(DISTINCT m.person_id)
+FROM #__cluborganisation_memberships m
+INNER JOIN #__cluborganisation_persons p ON p.id = m.person_id
+WHERE m.begin <= :refDate
+  AND (m.end IS NULL OR m.end >= :refDate)
+  AND p.active = 1
+```
+
+- **Monatliche Entwicklung:** Stichtag = letzter Tag des jeweiligen Monats (`DATE_SUB(LAST_DAY(...))`)
+- **Jahresentwicklung:** Stichtag = 31.12. des Jahres (laufendes Jahr: heute); Mitgliedschaften mit `end = '31.12.'` zählen mit
+- **Mitgliedschaftsdauer:** `DATEDIFF(refDate, MIN(begin)) / 365.25` gruppiert nach Jahres-Brackets
+- **Altersstruktur:** Birthday-Range-Berechnung per `strtotime` in PHP
+
+### Diagramme
+
+Chart.js 4.4.1 (CDN `cdnjs.cloudflare.com`), alle Charts `responsive: true, maintainAspectRatio: false` in einem 300 px hohen Wrapper.
 
 ---
 
@@ -379,4 +410,4 @@ WHERE person_id = :id AND end IS NULL
 
 ---
 
-**Stand:** Februar 2026 · **Version:** 2.0.0
+**Stand:** Februar 2026 · **Version:** 2.1.0

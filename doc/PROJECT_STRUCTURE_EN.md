@@ -1,6 +1,6 @@
 # ClubOrganisation – Project Structure
 
-**Version:** 2.0.0  
+**Version:** 2.1.0  
 **Joomla:** 5.x / 6.x
 
 ---
@@ -21,7 +21,7 @@ cluborganisation/
 │   │   ├── Helper/EncryptionHelper.php
 │   │   ├── Model/                  # 12 models
 │   │   ├── Table/                  # 5 table classes
-│   │   └── View/                   # 12 views
+│   │   └── View/                   # 13 views
 │   ├── tmpl/                       # Templates
 │   ├── access.xml
 │   └── config.xml
@@ -172,4 +172,4 @@ public function onBeforeApiRoute(&$router): void
 
 ---
 
-**Date:** February 2026 · **Version:** 2.0.0
+**Date:** February 2026 · **Version:** 2.1.0

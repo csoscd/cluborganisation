@@ -1,6 +1,6 @@
 # ClubOrganisation – Joomla 5/6 Component
 
-**Version:** 2.0.0  
+**Version:** 2.1.0  
 **License:** GPLv3 (see LICENSE)
 
 ---
@@ -13,6 +13,7 @@ A complete Joomla component for managing club memberships.
 ✅ **Membership Management** – Date-based with overlap validation  
 ✅ **Bank Data Management** – AES-256 encrypted, session-based key  
 ✅ **REST API** – JSON export for external systems  
+✅ **Statistics** – Graphical & tabular member analysis (new in 2.1.0)  
 ✅ **GDPR Compliant** – Automatic anonymisation after configurable period  
 ✅ **Migration Tool** – Import from Clubmanagement  
 ✅ **BwPostman Sync** – Newsletter synchronisation  
@@ -169,4 +170,4 @@ GNU General Public License version 3 or later – see `LICENSE`.
 
 ---
 
-**Version:** 2.0.0 · **Date:** February 2026
+**Version:** 2.1.0 · **Date:** February 2026

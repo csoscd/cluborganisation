@@ -1,6 +1,6 @@
 # ClubOrganisation – Feature-Übersicht
 
-**Version:** 2.0.0  
+**Version:** 2.1.0  
 **Joomla:** 5.x / 6.x
 
 ---
@@ -76,7 +76,20 @@ Automatische Anonymisierung nach konfigurierbarer Frist (1–20 Jahre):
 - Setzt Active-Flag auf 0
 - DSGVO Artikel 17 konform, Transaction-Safe
 
-### 8. Stammdaten
+### 9. Statistik (neu in 2.1.0)
+
+Neue Admin-Seite mit grafischen und tabellarischen Auswertungen:
+- Liniendiagramm Mitgliederentwicklung letztes Jahr (monatlich, Stichtag letzter Monatstag)
+- Liniendiagramm Mitgliederentwicklung aktuelles Jahr (Farbe #f29838)
+- Balkendiagramm Mitgliederentwicklung seit konfiguriertem Startjahr (Farbe #f29838)
+- Tabelle Mitgliederstruktur je Mitgliedschaftsart (aktuelles Jahr, Vorjahr, Differenz)
+- Vergleichs-Balkendiagramm Mitgliederstruktur (aktuelles Jahr: #f29838, Vorjahr: #132d6a)
+- Tabelle Altersstruktur in 5 Gruppen (< 18, 18–29, 30–49, 50–65, > 65)
+- Tabelle Mitgliedschaftsdauer in 6 Gruppen (≤ 1 J. bis > 20 J.)
+
+Das Startjahr für das Langzeit-Diagramm ist in der Komponentenkonfiguration unter dem neuen Abschnitt **Reporting** einstellbar.
+
+### 10. Stammdaten
 
 - Anreden: Herr, Frau, Divers (erweiterbar, sortierbar)
 - Mitgliedschaftstypen: Einzelmitglied, Einzelmitglied (reduziert), Familienmitglied (zahlend), Familienmitglied (erweiterbar)
@@ -231,4 +244,4 @@ GROUP BY altersgruppe;
 
 ---
 
-**Stand:** Februar 2026 · **Version:** 2.0.0
+**Stand:** Februar 2026 · **Version:** 2.1.0

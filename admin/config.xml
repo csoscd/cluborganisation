@@ -99,6 +99,23 @@
     </fieldset>
 
     <fieldset
+        name="reporting"
+        label="COM_CLUBORGANISATION_CONFIG_REPORTING_LABEL"
+        description="COM_CLUBORGANISATION_CONFIG_REPORTING_DESC"
+    >
+        <field
+            name="statistics_start_year"
+            type="number"
+            label="COM_CLUBORGANISATION_CONFIG_STATISTICS_START_YEAR_LABEL"
+            description="COM_CLUBORGANISATION_CONFIG_STATISTICS_START_YEAR_DESC"
+            default="2020"
+            min="1900"
+            max="2099"
+            step="1"
+        />
+    </fieldset>
+
+    <fieldset
         name="permissions"
         label="JCONFIG_PERMISSIONS_LABEL"
         description="JCONFIG_PERMISSIONS_DESC"
