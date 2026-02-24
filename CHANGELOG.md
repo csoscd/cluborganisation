@@ -5,6 +5,85 @@ Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [2.1.0] – 2026-02-23
+
+### Neu: Erweiterte Statistiken
+
+#### Fluktuation (Eintritte / Austritte / Netto)
+- Liniendiagramm **Eintritte & Austritte pro Jahr** seit Startjahr (orange = Eintritte, blau = Austritte)
+- Balkendiagramm **Netto-Veränderung pro Jahr**: Balken in #f29838 (positiv) bzw. #132d6a (negativ)
+- Eintrittsjahr = YEAR(MIN(begin)) aller Mitgliedschaften der Person
+- Austrittsjahr = YEAR(MAX(end)) sofern keine end=NULL-Mitgliedschaft existiert
+
+#### Jubiläen
+- Tabelle **Jubiläen aktuelles Jahr**: aktive Mitglieder mit 5/10/20/25/40-jährigem Jubiläum
+- Tabelle **Vorschau nächstes Jahr**: Mitglieder mit Jubiläum im Folgejahr; nur wenn im nächsten Jahr noch eine aktive Mitgliedschaft besteht (end IS NULL oder end ≥ 1.1. des nächsten Jahres)
+- Sortierung: Eintrittsjahr aufsteigend, dann Nachname/Vorname
+
+### Neu: Datacheck (Datenvollständigkeit)
+
+Neuer Menüpunkt **Datacheck** mit vier Prüflisten für aktive Mitglieder:
+- **Fehlende Geburtsdaten** (NULL, 0000-00-00 oder 1970-01-01)
+- **Fehlende E-Mail-Adresse**
+- **Fehlende Telefonnummer**
+- **Kein Joomla-Benutzer verknüpft** (user_id NULL oder 0)
+
+Jede Zeile enthält einen Direkt-Link zur Person-Bearbeitungsmaske (`view=person&layout=edit`).
+Badge zeigt Anzahl Betroffener oder „Vollständig" wenn keine Lücken.
+
+#### Neue Dateien
+- `DatacheckModel.php` – 4 Queries mit Subquery auf end=NULL-Mitgliedschaften
+- `DatacheckHtmlView.php` – Namespace `...View\Datacheck`
+- `datacheck_default.php` – Template mit CSS-Cards, Badges und Edit-Links
+
+### Technisches
+- `StatisticsModel.php`: neue Methoden `getMemberJoinsPerYear()`, `getMemberLeavesPerYear()`, `getMemberAnniversaries()`
+- `StatisticsHtmlView.php`: Chart-Daten für Fluktuation und Jubiläen
+- `statistics_default.php`: Zeilen 5 (Fluktuation) und 6 (Jubiläen) ergänzt
+- `auto_install.sh`: Datacheck-View, -Model und -Tmpl integriert
+- Neue Sprachkonstanten in `de-DE` und `en-GB`
+
+---
+
+## [2.1.0] – 2026-02-23
+
+### Neu: Statistik-Seite im Admin-Backend
+
+Neuer Menüpunkt **Statistik** im Verwaltungsbereich der Komponente.
+
+#### Inhalte der Statistikseite
+
+- **Mitgliederentwicklung letztes Jahr** – Liniendiagramm, jeweils letzter Tag des Monats
+- **Mitgliederentwicklung aktuelles Jahr** – Liniendiagramm (#f29838), letzter Tag des Monats; zukünftige Monate werden ausgeblendet
+- **Mitgliederentwicklung seit Jahr X** – Balkendiagramm (#f29838) mit Jahreswerten (Stichtag 31.12.), Startjahr konfigurierbar
+- **Mitgliederstruktur** – Tabelle mit aktuelles Jahr / Vorjahr / Differenz je Mitgliedschaftsart
+- **Mitgliederstruktur Vergleich** – Gruppierts Balkendiagramm (aktuelles Jahr: #f29838, Vorjahr: #132d6a)
+- **Altersstruktur** – Tabelle nach Altersgruppen (< 18, 18–29, 30–49, 50–65, > 65)
+- **Mitgliedschaftsdauer** – Tabelle nach Dauer (≤1 J., 1–5 J., 6–10 J., 11–15 J., 16–20 J., > 20 J.)
+
+#### Neue Konfigurationsoption
+
+Neuer Abschnitt **Reporting** in der Komponentenkonfiguration mit dem Feld *Startjahr der Statistik* (`statistics_start_year`, Standard: 2020).
+
+#### Nachträgliche Korrekturen (2.1.0)
+
+- **Diagramme leer (CSP):** Umgestellt auf `$doc->addScriptDeclaration()` via `buildInitScript()` – Joomla 4.2+/5.x fügt dabei automatisch das CSP-Nonce-Attribut ein. `statistics.js` entfällt. Chart-Daten weiterhin via `addScriptOptions()` → `<script type="application/json">` (kein JS, kein Nonce).
+- **Mitgliedschaftsdauer falsche Zählung:** Stichtags-aktive Mitgliedschaften als Basis lieferte falschen Wert (z. B. 16 statt 9 für ≤1 Jahr). Neue Logik: (1) Nur Personen mit mind. einer `end IS NULL`-Mitgliedschaft. (2) Frühestes `begin` über **alle** Mitgliedschaften der Person. (3) Jahresdifferenz = `YEAR(Stichtag) – YEAR(frühestes begin)`. PHP-seitiges Grouping via `loadDurationData()`.
+- **Mitgliedschaftsdauer Durchschnitt:** Neue Methode `getAverageDurationAtDate()`, neue View-Properties `$avgDurationCurrent`/`$avgDurationPrev`, neue `<tfoot>`-Zeile im Template.
+- **Altersstruktur Durchschnitt:** Ø Durchschnittsalter als `<tfoot>`-Zeile (MySQL `TIMESTAMPDIFF`).
+- **Sprachkonstanten:** `COM_CLUBORGANISATION_STATS_DUR_AVG` und `COM_CLUBORGANISATION_STATS_AGE_AVG` in `de-DE` und `en-GB` ergänzt.
+
+#### Technisches
+
+- `StatisticsModel.php` – Datenbanklogik (Dauer, Ø Alter, Ø Dauer)
+- `StatisticsHtmlView.php` – Chart-Init via `buildInitScript()` + `addScriptDeclaration()`
+- `statistics_default.php` – Durchschnittzeilen in beiden Tabellen
+- Sprachkonstanten in `de-DE.com_cluborganisation.ini` und `en-GB.com_cluborganisation.ini`
+- Menüeintrag in `cluborganisation.xml`
+- Erweiterung `config.xml` um Fieldset `reporting`
+
+---
+
 ## [2.0.0] – 2026-02-20
 
 ### Neu: REST-API Export

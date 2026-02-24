@@ -1,6 +1,6 @@
 # ClubOrganisation – Joomla 5/6 Komponente
 
-**Version:** 2.0.0  
+**Version:** 2.1.0  
 **Lizenz:** GPLv3 (siehe LICENSE)
 
 ---
@@ -13,6 +13,7 @@ Vollständige Joomla-Komponente zur Verwaltung von Vereinsmitgliedschaften.
 ✅ **Mitgliedschafts-Verwaltung** – Zeitraum-basiert mit Überschneidungsprüfung  
 ✅ **Bankdaten-Verwaltung** – AES-256 verschlüsselt, Session-basierter Schlüssel  
 ✅ **REST-API** – JSON-Export für externe Systeme  
+✅ **Statistik** – Grafische & tabellarische Mitgliederauswertungen (neu in 2.1.0)  
 ✅ **DSGVO-konform** – Automatische Anonymisierung nach konfigurierbarer Frist  
 ✅ **Migration Tool** – Import aus Clubmanagement  
 ✅ **BwPostman-Sync** – Newsletter-Synchronisation  
@@ -175,4 +176,4 @@ GNU General Public License version 3 or later – siehe `LICENSE`.
 
 ---
 
-**Version:** 2.0.0 · **Stand:** Februar 2026
+**Version:** 2.1.0 · **Stand:** Februar 2026

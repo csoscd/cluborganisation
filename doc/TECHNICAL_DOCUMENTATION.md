@@ -1,6 +1,6 @@
 # ClubOrganisation – Technical Documentation
 
-**Version:** 2.0.0  
+**Version:** 2.1.0  
 **Joomla:** 5.x / 6.x  
 **PHP:** 8.1+
 
@@ -118,6 +118,42 @@ Exclude persons without matching memberships when active_memberships=1
     ↓
 Return array
 ```
+
+---
+
+## Statistics (new in 2.1.0)
+
+### Architecture
+
+Follows the same pattern as `Feereport`: no dedicated controller (Joomla default dispatch), `StatisticsModel` extends `BaseDatabaseModel`.
+
+### Reference Date Queries
+
+All queries use a reference date parameter:
+
+```sql
+-- Active members at reference date
+SELECT COUNT(DISTINCT m.person_id)
+FROM #__cluborganisation_memberships m
+INNER JOIN #__cluborganisation_persons p ON p.id = m.person_id
+WHERE m.begin <= :refDate
+  AND (m.end IS NULL OR m.end >= :refDate)
+  AND p.active = 1
+```
+
+- Monthly development: last day of each month
+- Yearly development: 31 Dec of each year; current year uses today
+- Memberships ending on 31 Dec are still counted for that year
+- Duration calculated as `DATEDIFF(refDate, MIN(begin)) / 365.25`
+- Age groups derived from birthday vs. reference date using PHP `strtotime`
+
+### Charts
+
+Chart.js 4.4.1 loaded from `cdnjs.cloudflare.com`. All charts use `responsive: true` inside a 300 px wrapper div. Future months are passed as `null` and rendered as gaps.
+
+### Configuration
+
+New `reporting` fieldset in `config.xml` with field `statistics_start_year` (default: 2020). Accessed via `ComponentHelper::getParams('com_cluborganisation')`.
 
 ---
 
@@ -289,4 +325,4 @@ WHERE person_id = :id AND end IS NULL
 
 ---
 
-**Date:** February 2026 · **Version:** 2.0.0
+**Date:** February 2026 · **Version:** 2.1.0

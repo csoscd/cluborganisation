@@ -1,6 +1,6 @@
 # ClubOrganisation – Feature Overview
 
-**Version:** 2.0.0  
+**Version:** 2.1.0  
 **Joomla:** 5.x / 6.x
 
 ---
@@ -70,7 +70,20 @@ Automatic anonymisation after configurable period (1–20 years):
 - Deletes completely: all bank accounts
 - Sets active flag to 0; GDPR Article 17 compliant, transaction-safe
 
-### 8. Master Data
+### 9. Statistics (new in 2.1.0)
+
+New admin page with graphical and tabular member analysis:
+- Line chart: member development last year (monthly, last day of each month)
+- Line chart: member development current year (colour #f29838)
+- Bar chart: member development since configurable start year (colour #f29838)
+- Table: member structure per membership type (current year, previous year, diff.)
+- Grouped bar chart: member structure comparison (#f29838 / #132d6a)
+- Table: age structure in 5 groups (< 18, 18–29, 30–49, 50–65, > 65)
+- Table: membership duration in 6 groups (≤ 1 yr to > 20 yr)
+
+The start year for the long-term chart is configurable in the **Reporting** section of the component settings.
+
+### 10. Master Data
 
 - Salutations: Mr, Ms, Other (extensible, sortable)
 - Membership types: Individual, Individual (reduced), Family (paying), Family (extensible)
@@ -203,4 +216,4 @@ GROUP BY t.title ORDER BY count DESC;
 
 ---
 
-**Date:** February 2026 · **Version:** 2.0.0
+**Date:** February 2026 · **Version:** 2.1.0
