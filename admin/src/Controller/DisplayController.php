@@ -25,7 +25,7 @@ class DisplayController extends BaseController
      * @var    string
      * @since  1.0.0
      */
-    protected $default_view = 'persons';
+    protected $default_view = 'dashboard';
 
     /**
      * Display-Methode

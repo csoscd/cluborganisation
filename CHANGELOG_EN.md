@@ -5,6 +5,112 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [2.2.0] – 2026-02-24
+
+### New: Dashboard
+
+New entry point for the component (replaces the persons list as default view).
+
+**KPI tiles:**
+- Active persons
+- Active memberships
+- New members this month
+- Memberships ending in the current year (without a follow-up membership) – red when > 0
+- Open data gaps from Data Check (only shown when > 0, then red)
+
+**Sections:**
+- Installed component version as a badge
+- Update notice if the Joomla Update Manager knows of an update for `com_cluborganisation` (with direct link to Update Manager)
+- Extension status: Birthday Module and Webservices API Plugin – shows installed badge or download link
+- Data Check summary with counts per category and direct link to Data Check
+- Anniversaries in the current month (only shown when present)
+
+**New files:** `DashboardModel.php`, `DashboardHtmlView.php`, `dashboard_default.php`
+
+### New: Structured Admin Menu
+
+The submenu is divided into 6 groups (separators without `link` attribute):
+Dashboard | Members | Finances | Reporting | Communication | Master Data | System
+
+### Extended: Data Check
+
+#### New check: Active persons without a current membership
+- Lists all persons with `active = 1` but no membership with `end IS NULL`
+- Each row has an edit link and a **Deactivate** button
+- Confirmation dialog before executing
+- After deactivation the user stays on the Data Check page
+- New controller `DatacheckController` with `deactivatePerson()`:
+  - CSRF protection via `Session::checkToken()`
+  - Sets `active = 0` and updates `modified` timestamp
+  - Task: `datacheck.deactivatePerson`
+
+### Fixed: Statistics filters
+
+Removed `active` filter from all statistical snapshot methods. The admin flag `active`
+carries no historical information; statistics must be membership-date based only.
+
+| Method | Impact |
+|---|---|
+| `countMembersAtDate()` | Monthly/yearly member development – deactivated persons correctly included |
+| `countMembersByTypeAtDate()` | Member structure by type |
+| `countMembersByAgeAtDate()` | Age structure |
+| `getAverageAgeAtDate()` | Average age |
+
+`getMemberJoinsPerYear()` and `getMemberLeavesPerYear()` had no persons join → already correct.
+
+### Technical
+- `DisplayController.php`: `$default_view = 'dashboard'`
+- `cluborganisation.xml`: version 2.2.0, new structured `<submenu>`
+- `auto_install.sh`: Dashboard and DatacheckController integrated; version 2.2.0
+- New language constants in `de-DE` and `en-GB`
+
+---
+
+## [2.1.0] – 2026-02-23
+
+### New: Extended Statistics
+
+#### Fluctuation (joins / leaves / net change)
+- Line chart **Joins & Leavers per Year** since start year (orange = joins, blue = leavers)
+- Bar chart **Net Change per Year**: bars in #f29838 (positive) and #132d6a (negative)
+- Entry year = `YEAR(MIN(begin))` across all memberships of the person
+- Leave year = `YEAR(MAX(end))` where no `end IS NULL` membership exists
+
+#### Anniversaries
+- Table **Anniversaries current year**: active members with 5/10/20/25/40-year anniversaries
+- Table **Preview next year**: members with anniversary in the following year; only if an active membership will still exist next year
+- Sorted by entry year ascending, then last name / first name
+
+### New: Data Check
+
+New menu item **Data Check** with five check lists for active members:
+- Missing date of birth (NULL, 0000-00-00 or 1970-01-01)
+- Missing email address
+- Missing mobile number
+- No Joomla user linked (`user_id` NULL or 0)
+- No membership at all
+
+Each row has a direct link to the person edit form (`view=person&layout=edit`).
+Badge shows number of affected persons or "Complete" if no gaps.
+
+**New files:** `DatacheckModel.php`, `DatacheckHtmlView.php`, `datacheck_default.php`
+
+### Technical
+- `StatisticsModel.php`: new methods `getMemberJoinsPerYear()`, `getMemberLeavesPerYear()`, `getMemberAnniversaries()`
+- `StatisticsHtmlView.php`: chart data for fluctuation and anniversaries
+- `statistics_default.php`: rows 5 (fluctuation) and 6 (anniversaries) added
+- `auto_install.sh`: Data Check view, model and template integrated
+- New language constants in `de-DE` and `en-GB`
+
+#### Bug fixes applied in 2.1.0
+- **Charts empty (CSP):** Switched to `$doc->addScriptDeclaration()` via `buildInitScript()` – Joomla 4.2+/5.x automatically adds the CSP nonce attribute. `statistics.js` removed.
+- **Membership duration wrong count:** New logic: (1) only persons with at least one `end IS NULL` membership; (2) earliest `begin` across **all** memberships; (3) year difference = `YEAR(ref date) – YEAR(earliest begin)`. PHP-side grouping via `loadDurationData()`.
+- **Duration/age averages:** New methods `getAverageDurationAtDate()` and updated `getAverageAgeAtDate()`, with `<tfoot>` rows in both tables.
+- **Language constants:** `COM_CLUBORGANISATION_STATS_DUR_AVG`, `COM_CLUBORGANISATION_STATS_AGE_AVG` added/corrected in `de-DE` and `en-GB`.
+- **GROUP BY alias (MySQL 1056/1111):** `getMemberJoinsPerYear()` and `getMemberLeavesPerYear()` rewritten with subqueries to avoid grouping on calculated aliases or aggregate functions.
+
+---
+
 ## [2.0.0] – 2026-02-20
 
 ### New: REST API Export

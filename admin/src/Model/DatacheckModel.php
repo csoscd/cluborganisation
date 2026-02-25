@@ -10,6 +10,7 @@ namespace CSOSCD\Component\ClubOrganisation\Administrator\Model;
 
 defined('_JEXEC') or die;
 
+use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\Model\BaseDatabaseModel;
 
 /**
@@ -173,6 +174,94 @@ class DatacheckModel extends BaseDatabaseModel
         return $db->loadAssocList() ?: [];
     }
 
+    /**
+     * Aktive Personen ohne aktive Mitgliedschaft (kein end=NULL-Eintrag).
+     * Das sind Personen, die noch als active=1 markiert sind, aber keine
+     * laufende Mitgliedschaft mehr haben.
+     *
+     * @return  array  [['id' => 1, 'firstname' => '...', 'lastname' => '...'], ...]
+     * @since   2.2.0
+     */
+    /**
+     * Deaktiviert eine Person (active = 0) und – sofern verknüpft –
+     * auch den zugehörigen Joomla-Benutzer (block = 1).
+     *
+     * @param   int  $personId  ID der Person
+     *
+     * @return  array  ['success' => bool, 'message' => string]
+     * @since   2.2.0
+     */
+    public function deactivatePerson(int $personId): array
+    {
+        $db = $this->getDbo();
+
+        // user_id der Person auslesen
+        $queryUser = $db->getQuery(true);
+        $queryUser->select($db->quoteName('user_id'))
+            ->from($db->quoteName('#__cluborganisation_persons'))
+            ->where($db->quoteName('id') . ' = ' . $personId);
+        $db->setQuery($queryUser);
+        $userId = (int) $db->loadResult();
+
+        // Person deaktivieren
+        $query = $db->getQuery(true);
+        $query->update($db->quoteName('#__cluborganisation_persons'))
+            ->set($db->quoteName('active') . ' = 0')
+            ->set($db->quoteName('modified') . ' = ' . $db->quote(date('Y-m-d H:i:s')))
+            ->where($db->quoteName('id') . ' = ' . $personId);
+        $db->setQuery($query);
+        $db->execute();
+
+        // Verknüpften Joomla-Benutzer sperren (falls vorhanden)
+        $userBlocked = false;
+        if ($userId > 0) {
+            $queryBlock = $db->getQuery(true);
+            $queryBlock->update($db->quoteName('#__users'))
+                ->set($db->quoteName('block') . ' = 1')
+                ->where($db->quoteName('id') . ' = ' . $userId);
+            $db->setQuery($queryBlock);
+            $db->execute();
+            $userBlocked = true;
+        }
+
+        $message = $userBlocked
+            ? Text::sprintf(
+                'COM_CLUBORGANISATION_DATACHECK_DEACTIVATE_SUCCESS_WITH_USER',
+                $personId
+              )
+            : Text::sprintf(
+                'COM_CLUBORGANISATION_DATACHECK_DEACTIVATE_SUCCESS',
+                $personId
+              );
+
+        return ['success' => true, 'message' => $message];
+    }
+
+    public function getActivePersonsWithoutActiveMembership(): array
+    {
+        $db = $this->getDbo();
+
+        // Personen-IDs mit mind. einer end=NULL-Mitgliedschaft
+        $sqOpen = $db->getQuery(true);
+        $sqOpen->select('DISTINCT ' . $db->quoteName('person_id'))
+            ->from($db->quoteName('#__cluborganisation_memberships'))
+            ->where($db->quoteName('end') . ' IS NULL');
+
+        $query = $db->getQuery(true);
+        $query->select([
+            $db->quoteName('p.id'),
+            $db->quoteName('p.firstname'),
+            $db->quoteName('p.lastname'),
+        ])
+            ->from($db->quoteName('#__cluborganisation_persons', 'p'))
+            ->where($db->quoteName('p.active') . ' = 1')
+            ->where($db->quoteName('p.id') . ' NOT IN (' . $sqOpen . ')')
+            ->order($db->quoteName('p.lastname') . ' ASC, ' . $db->quoteName('p.firstname') . ' ASC');
+
+        $db->setQuery($query);
+        return $db->loadAssocList() ?: [];
+    }
+
     public function getSummary(): array
     {
         return [
@@ -181,6 +270,7 @@ class DatacheckModel extends BaseDatabaseModel
             'missingMobile'   => count($this->getMissingMobile()),
             'missingUser'     => count($this->getMissingUser()),
             'noMembership'    => count($this->getNoMembership()),
+            'activeNoActive'  => count($this->getActivePersonsWithoutActiveMembership()),
         ];
     }
 }
