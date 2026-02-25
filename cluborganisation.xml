@@ -71,7 +71,6 @@
             <folder>sql</folder>
             <folder>src</folder>
             <folder>tmpl</folder>
-            <folder>plugins</folder>
         </files>
 
         <languages folder="admin/language">
