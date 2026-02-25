@@ -5,6 +5,97 @@ Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [2.2.0] – 2026-02-24 (Ergänzung)
+
+### Erweitert: Datacheck
+
+#### Neue Prüfung: Aktive Personen ohne laufende Mitgliedschaft
+- Listet alle Personen, die `active = 1` sind, aber keine Mitgliedschaft mit `end IS NULL` haben
+- Jede Zeile enthält neben dem Edit-Link einen **Deaktivieren**-Button
+- Bestätigungs-Abfrage per `onsubmit`-Dialog vor dem Ausführen
+- Nach dem Deaktivieren verbleibt man auf der Datacheck-Seite (Redirect zurück)
+- Badge rot hervorgehoben (Unterschied zu anderen Kategorien, die orange sind)
+- Neuer Controller `DatacheckController` mit Methode `deactivatePerson()`:
+  - CSRF-Schutz via `Session::checkToken()`
+  - Setzt `active = 0` und aktualisiert `modified`-Zeitstempel
+  - Task: `datacheck.deactivatePerson`
+
+### Korrigiert: Statistik-Filter
+
+`active`-Filter aus allen statistischen Snapshot-Methoden entfernt, da der Admin-Flag
+`active` keine historische Aussage trifft. Betrifft:
+
+| Methode | Auswirkung |
+|---|---|
+| `countMembersAtDate()` | Monats-/Jahresentwicklung – deaktivierte Personen korrekt enthalten |
+| `countMembersByTypeAtDate()` | Mitgliederstruktur nach Typ |
+| `countMembersByAgeAtDate()` | Altersstruktur |
+| `getAverageAgeAtDate()` | Durchschnittsalter |
+
+`getMemberJoinsPerYear()` und `getMemberLeavesPerYear()` hatten keinen Persons-Join → bereits korrekt.
+
+Nur Gegenwarts-/Jubiläums-Abfragen (`getMemberAnniversaries`, `getActivePersonsWithoutActiveMembership` etc.) behalten ihren Kontext-Filter.
+
+### Neue Dateien
+- `DatacheckController.php`
+
+### Geänderte Dateien
+- `DatacheckModel.php`: `getActivePersonsWithoutActiveMembership()`
+- `DatacheckHtmlView.php`: neues Property `$activeNoActiveMembership`
+- `datacheck_default.php`: neue Gruppe mit Deaktivieren-Button, `co_datacheck_table()` um `$showDeactivate` erweitert
+- `StatisticsModel.php`: `active`-Filter aus 4 Methoden entfernt
+- `auto_install.sh`: `DatacheckController.php` integriert
+- Neue Sprachkonstanten in `de-DE` und `en-GB`
+
+---
+
+## [2.2.0] – 2026-02-24
+
+### Neu: Dashboard
+
+Neuer Einstiegspunkt der Komponente (ersetzt die Personenliste als Standard-View).
+
+**KPI-Kacheln (immer sichtbar):**
+- Aktive Personen
+- Aktive Mitgliedschaften
+- Neue Mitglieder im laufenden Monat
+- Mitgliedschaften, die in den nächsten 60 Tagen enden (rot wenn > 0)
+- Offene Datenlücken aus dem Datacheck (nur sichtbar wenn > 0, dann rot)
+
+**Sections:**
+- Installierte Komponentenversion als Badge
+- Update-Hinweis wenn Joomla-Update-Manager ein Update für com_cluborganisation kennt (mit Direktlink zum Update-Manager)
+- Erweiterungs-Status: Birthday Module und Webservices API Plugin mit Installiert-Badge oder Download-Link
+- Datacheck-Übersicht mit Zählern je Kategorie und Direktlink zum Datacheck
+- Jubiläen im laufenden Monat (nur sichtbar wenn vorhanden)
+
+**Neue Dateien:**
+- `DashboardModel.php` – Kennzahlen, Erweiterungsstatus, Update-Check via `#__updates`
+- `DashboardHtmlView.php` – Namespace `...View\Dashboard`
+- `dashboard_default.php` – Template mit KPI-Grid, Cards, CSS
+
+### Neu: Strukturiertes Admin-Menü
+
+Das Untermenü ist in 6 Gruppen gegliedert (Trenner ohne `link`-Attribut):
+
+| Gruppe | Einträge |
+|---|---|
+| *(oben)* | Dashboard |
+| Mitglieder | Personen, Mitgliedschaften, Bankverbindungen |
+| Finanzen | Beitragsübersicht, Beitragssätze |
+| Auswertungen | Statistik, Datacheck |
+| Kommunikation | BwPostman-Sync |
+| Stammdaten | Mitgliedschaftsarten, Anreden |
+| System | Migration, DSGVO-Bereinigung |
+
+### Technisches
+- `DisplayController.php`: `$default_view = 'dashboard'`
+- `cluborganisation.xml`: Version 2.2.0, neues `<submenu>` mit Gruppentrennern
+- `auto_install.sh`: Dashboard-View, -Model, -Tmpl integriert; Version 2.2.0
+- 26 neue Sprachkonstanten in `de-DE` und `en-GB`
+
+---
+
 ## [2.1.0] – 2026-02-23
 
 ### Neu: Erweiterte Statistiken

@@ -30,22 +30,26 @@ class HtmlView extends BaseHtmlView
     /** @var array  Mitglieder ohne Mobilfunknummer */
     protected $missingMobile;
 
-    /** @var array  Personen ohne jede Mitgliedschaft */
-    protected $noMembership;
-
     /** @var array  Mitglieder ohne Joomla-User */
     protected $missingUser;
+
+    /** @var array  Aktive Personen ohne jede Mitgliedschaft */
+    protected $noMembership;
+
+    /** @var array  Aktive Personen ohne aktive Mitgliedschaft (kein end=NULL) */
+    protected $activeNoActiveMembership;
 
     public function display($tpl = null)
     {
         /** @var \CSOSCD\Component\ClubOrganisation\Administrator\Model\DatacheckModel $model */
         $model = $this->getModel();
 
-        $this->missingBirthday = $model->getMissingBirthday();
-        $this->missingEmail    = $model->getMissingEmail();
-        $this->missingMobile   = $model->getMissingMobile();
-        $this->noMembership    = $model->getNoMembership();
-        $this->missingUser     = $model->getMissingUser();
+        $this->missingBirthday         = $model->getMissingBirthday();
+        $this->missingEmail            = $model->getMissingEmail();
+        $this->missingMobile           = $model->getMissingMobile();
+        $this->missingUser             = $model->getMissingUser();
+        $this->noMembership            = $model->getNoMembership();
+        $this->activeNoActiveMembership = $model->getActivePersonsWithoutActiveMembership();
 
         if (count($errors = $this->get('Errors'))) {
             throw new \Exception(implode("\n", $errors), 500);

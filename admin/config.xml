@@ -1,10 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
 <config>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         Komponenten-Einstellungen
+         ════════════════════════════════════════════════════════════════════ -->
     <fieldset
         name="component"
         label="JGLOBAL_FIELDSET_COMPONENT_SETTINGS"
         description="COM_CLUBORGANISATION_CONFIG_COMPONENT_DESC"
     >
+        <field
+            name="show_menu_groups"
+            type="radio"
+            label="COM_CLUBORGANISATION_CONFIG_SHOW_MENU_GROUPS_LABEL"
+            description="COM_CLUBORGANISATION_CONFIG_SHOW_MENU_GROUPS_DESC"
+            class="btn-group btn-group-yesno"
+            default="1"
+        >
+            <option value="0">JDISABLED</option>
+            <option value="1">JENABLED</option>
+        </field>
+
+        <field
+            name="show_migration"
+            type="radio"
+            label="COM_CLUBORGANISATION_CONFIG_SHOW_MIGRATION_LABEL"
+            description="COM_CLUBORGANISATION_CONFIG_SHOW_MIGRATION_DESC"
+            class="btn-group btn-group-yesno"
+            default="0"
+        >
+            <option value="0">JDISABLED</option>
+            <option value="1">JENABLED</option>
+        </field>
+
+        <field
+            name="show_bwpostman"
+            type="radio"
+            label="COM_CLUBORGANISATION_CONFIG_SHOW_BWPOSTMAN_LABEL"
+            description="COM_CLUBORGANISATION_CONFIG_SHOW_BWPOSTMAN_DESC"
+            class="btn-group btn-group-yesno"
+            default="0"
+        >
+            <option value="0">JDISABLED</option>
+            <option value="1">JENABLED</option>
+        </field>
+
+    </fieldset>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         DSGVO
+         ════════════════════════════════════════════════════════════════════ -->
+    <fieldset
+        name="dsgvo"
+        label="COM_CLUBORGANISATION_CONFIG_DSGVO_LABEL"
+        description="COM_CLUBORGANISATION_CONFIG_DSGVO_DESC"
+    >
+        <field
+            name="show_dsgvo"
+            type="radio"
+            label="COM_CLUBORGANISATION_CONFIG_SHOW_DSGVO_LABEL"
+            description="COM_CLUBORGANISATION_CONFIG_SHOW_DSGVO_DESC"
+            class="btn-group btn-group-yesno"
+            default="1"
+        >
+            <option value="0">JDISABLED</option>
+            <option value="1">JENABLED</option>
+        </field>
+
         <field
             name="dsgvo_years_threshold"
             type="number"
@@ -14,9 +76,13 @@
             min="1"
             max="20"
             step="1"
+            showon="show_dsgvo:1"
         />
     </fieldset>
 
+    <!-- ════════════════════════════════════════════════════════════════════
+         Mitgliedsnummern
+         ════════════════════════════════════════════════════════════════════ -->
     <fieldset
         name="member_numbers"
         label="COM_CLUBORGANISATION_CONFIG_MEMBER_NUMBERS_LABEL"
@@ -46,6 +112,9 @@
         />
     </fieldset>
 
+    <!-- ════════════════════════════════════════════════════════════════════
+         Joomla-Benutzer
+         ════════════════════════════════════════════════════════════════════ -->
     <fieldset
         name="joomla_user"
         label="COM_CLUBORGANISATION_CONFIG_JOOMLA_USER_LABEL"
@@ -98,6 +167,9 @@
         </field>
     </fieldset>
 
+    <!-- ════════════════════════════════════════════════════════════════════
+         Auswertungen / Reporting
+         ════════════════════════════════════════════════════════════════════ -->
     <fieldset
         name="reporting"
         label="COM_CLUBORGANISATION_CONFIG_REPORTING_LABEL"
@@ -115,6 +187,9 @@
         />
     </fieldset>
 
+    <!-- ════════════════════════════════════════════════════════════════════
+         Berechtigungen
+         ════════════════════════════════════════════════════════════════════ -->
     <fieldset
         name="permissions"
         label="JCONFIG_PERMISSIONS_LABEL"

@@ -38,19 +38,16 @@ class StatisticsModel extends BaseDatabaseModel
         $db    = $this->getDbo();
         $query = $db->getQuery(true);
 
-        $query->select('COUNT(DISTINCT ' . $db->quoteName('m.person_id') . ')')
-            ->from($db->quoteName('#__cluborganisation_memberships', 'm'))
-            ->join(
-                'INNER',
-                $db->quoteName('#__cluborganisation_persons', 'p')
-                . ' ON ' . $db->quoteName('p.id') . ' = ' . $db->quoteName('m.person_id')
-            )
-            ->where($db->quoteName('m.begin') . ' <= ' . $db->quote($date))
+        // Kein active-Filter: historische Zählung basiert ausschließlich auf
+        // Mitgliedschaftsdaten (begin/end). Deaktivierte Personen bleiben in
+        // Langzeit-Statistiken (Monats-/Jahresentwicklung) korrekt enthalten.
+        $query->select('COUNT(DISTINCT ' . $db->quoteName('person_id') . ')')
+            ->from($db->quoteName('#__cluborganisation_memberships'))
+            ->where($db->quoteName('begin') . ' <= ' . $db->quote($date))
             ->where(
-                '(' . $db->quoteName('m.end') . ' IS NULL'
-                . ' OR ' . $db->quoteName('m.end') . ' >= ' . $db->quote($date) . ')'
-            )
-            ->where($db->quoteName('p.active') . ' = 1');
+                '(' . $db->quoteName('end') . ' IS NULL'
+                . ' OR ' . $db->quoteName('end') . ' >= ' . $db->quote($date) . ')'
+            );
 
         $db->setQuery($query);
 
@@ -183,20 +180,15 @@ class StatisticsModel extends BaseDatabaseModel
         $db    = $this->getDbo();
         $query = $db->getQuery(true);
 
-        $query->select('COUNT(DISTINCT ' . $db->quoteName('m.person_id') . ')')
-            ->from($db->quoteName('#__cluborganisation_memberships', 'm'))
-            ->join(
-                'INNER',
-                $db->quoteName('#__cluborganisation_persons', 'p')
-                . ' ON ' . $db->quoteName('p.id') . ' = ' . $db->quoteName('m.person_id')
-            )
-            ->where($db->quoteName('m.type') . ' = ' . $typeId)
-            ->where($db->quoteName('m.begin') . ' <= ' . $db->quote($date))
+        // Kein active-Filter: historische Zählung basiert auf Mitgliedschaftsdaten.
+        $query->select('COUNT(DISTINCT ' . $db->quoteName('person_id') . ')')
+            ->from($db->quoteName('#__cluborganisation_memberships'))
+            ->where($db->quoteName('type') . ' = ' . $typeId)
+            ->where($db->quoteName('begin') . ' <= ' . $db->quote($date))
             ->where(
-                '(' . $db->quoteName('m.end') . ' IS NULL'
-                . ' OR ' . $db->quoteName('m.end') . ' >= ' . $db->quote($date) . ')'
-            )
-            ->where($db->quoteName('p.active') . ' = 1');
+                '(' . $db->quoteName('end') . ' IS NULL'
+                . ' OR ' . $db->quoteName('end') . ' >= ' . $db->quote($date) . ')'
+            );
 
         $db->setQuery($query);
 
@@ -266,7 +258,7 @@ class StatisticsModel extends BaseDatabaseModel
                 '(' . $db->quoteName('m.end') . ' IS NULL'
                 . ' OR ' . $db->quoteName('m.end') . ' >= ' . $db->quote($refDate) . ')'
             )
-            ->where($db->quoteName('p.active') . ' = 1')
+            // Kein active-Filter: Altersstruktur basiert auf Mitgliedschaftsdaten.
             ->where($db->quoteName('p.birthday') . ' IS NOT NULL');
 
         // Altersberechnung: Geburtstag muss im gültigen Bereich liegen.
@@ -316,7 +308,7 @@ class StatisticsModel extends BaseDatabaseModel
             'AVG(TIMESTAMPDIFF(YEAR, ' . $db->quoteName('p.birthday') . ', ' . $db->quote($refDate) . '))'
         )
             ->from($db->quoteName('#__cluborganisation_persons', 'p'))
-            ->where($db->quoteName('p.active') . ' = 1')
+            // Kein active-Filter: Durchschnittsalter basiert auf Mitgliedschaftsdaten.
             ->where($db->quoteName('p.birthday') . ' IS NOT NULL')
             ->where($db->quoteName('p.id') . ' IN (' . $subQuery . ')');
 
