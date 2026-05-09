@@ -1,6 +1,6 @@
 # ClubOrganisation – Feature Overview
 
-**Version:** 2.1.0  
+**Version:** 2.3.0
 **Joomla:** 5.x / 6.x
 
 ---
@@ -29,6 +29,13 @@ Date-based memberships:
 - Max one active membership at a time; overlap check on save
 - Multiple historical memberships per person
 - Categorised by membership type
+
+**Dependent membership types (new in 2.3.0):**
+- Membership types can be marked as "dependent" (e.g. "Family Member" depends on "Family Member (paying)")
+- When creating a membership with a dependent type, the parent membership must be selected
+- When the parent membership ends, all dependent memberships without an earlier end date are automatically closed
+- When the parent membership's end date is removed, it is also removed from dependent memberships that share the same end date
+- Warning shown in the edit form for memberships that have dependent memberships linked
 
 ### 3. Bank Account Management
 
@@ -216,4 +223,4 @@ GROUP BY t.title ORDER BY count DESC;
 
 ---
 
-**Date:** February 2026 · **Version:** 2.1.0
+**Date:** March 2026 · **Version:** 2.3.0

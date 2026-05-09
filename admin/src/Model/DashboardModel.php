@@ -12,6 +12,7 @@ defined('_JEXEC') or die;
 
 use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\MVC\Model\BaseDatabaseModel;
+use CSOSCD\Component\ClubOrganisation\Administrator\Model\DatacheckModel;
 
 /**
  * Dashboard Model – liefert Kennzahlen und Status-Informationen für das Dashboard.
@@ -196,67 +197,26 @@ class DashboardModel extends BaseDatabaseModel
     // ─────────────────────────────────────────────────────────────────────────
 
     /**
-     * Datacheck-Zähler: wie viele aktive Mitglieder haben fehlende Pflichtdaten?
+     * Datacheck-Zähler: delegiert an DatacheckModel::getSummary() als einzige Quelle der Wahrheit.
      *
-     * @return  array  ['birthday' => n, 'email' => n, 'mobile' => n, 'user' => n, 'noMembership' => n]
+     * @return  array  ['birthday' => n, 'email' => n, 'mobile' => n, 'user' => n, 'noMembership' => n, 'activeNoActive' => n, 'orphanedDependent' => n]
      * @since   2.2.0
      */
     public function getDatacheckSummary(): array
     {
-        $db = $this->getDbo();
+        /** @var DatacheckModel $datacheckModel */
+        $datacheckModel = $this->getMVCFactory()->createModel('Datacheck', 'Administrator', ['ignore_request' => true]);
+        $s = $datacheckModel->getSummary();
 
-        // Aktive Personen mit offener Mitgliedschaft
-        $sqOpen = $db->getQuery(true);
-        $sqOpen->select('DISTINCT ' . $db->quoteName('person_id'))
-            ->from($db->quoteName('#__cluborganisation_memberships'))
-            ->where($db->quoteName('end') . ' IS NULL');
-
-        $base = $db->getQuery(true);
-        $base->from($db->quoteName('#__cluborganisation_persons', 'p'))
-            ->where($db->quoteName('p.active') . ' = 1')
-            ->where($db->quoteName('p.id') . ' IN (' . $sqOpen . ')');
-
-        $counts = [];
-
-        foreach ([
-            'birthday' => '(' . $db->quoteName('p.birthday') . ' IS NULL OR ' . $db->quoteName('p.birthday') . ' = ' . $db->quote('0000-00-00') . ' OR ' . $db->quoteName('p.birthday') . ' = ' . $db->quote('1970-01-01') . ')',
-            'email'    => '(' . $db->quoteName('p.email') . ' IS NULL OR ' . $db->quoteName('p.email') . ' = ' . $db->quote('') . ')',
-            'mobile'   => '(' . $db->quoteName('p.mobile') . ' IS NULL OR ' . $db->quoteName('p.mobile') . ' = ' . $db->quote('') . ')',
-            'user'     => '(' . $db->quoteName('p.user_id') . ' IS NULL OR ' . $db->quoteName('p.user_id') . ' = 0)',
-        ] as $key => $cond) {
-            $q = clone $base;
-            $q->select('COUNT(*)')->where($cond);
-            $db->setQuery($q);
-            $counts[$key] = (int) $db->loadResult();
-        }
-
-        // Aktive Personen ohne jede Mitgliedschaft
-        $sqHas = $db->getQuery(true);
-        $sqHas->select('DISTINCT ' . $db->quoteName('person_id'))
-            ->from($db->quoteName('#__cluborganisation_memberships'));
-        $qNo = $db->getQuery(true);
-        $qNo->select('COUNT(*)')
-            ->from($db->quoteName('#__cluborganisation_persons', 'p'))
-            ->where($db->quoteName('p.active') . ' = 1')
-            ->where($db->quoteName('p.id') . ' NOT IN (' . $sqHas . ')');
-        $db->setQuery($qNo);
-        $counts['noMembership'] = (int) $db->loadResult();
-
-        // Aktive Personen ohne aktive Mitgliedschaft (kein end=NULL)
-        $sqOpen = $db->getQuery(true);
-        $sqOpen->select('DISTINCT ' . $db->quoteName('person_id'))
-            ->from($db->quoteName('#__cluborganisation_memberships'))
-            ->where($db->quoteName('end') . ' IS NULL');
-
-        $qNoActive = $db->getQuery(true);
-        $qNoActive->select('COUNT(*)')
-            ->from($db->quoteName('#__cluborganisation_persons', 'p'))
-            ->where($db->quoteName('p.active') . ' = 1')
-            ->where($db->quoteName('p.id') . ' NOT IN (' . $sqOpen . ')');
-        $db->setQuery($qNoActive);
-        $counts['activeNoActive'] = (int) $db->loadResult();
-
-        return $counts;
+        return [
+            'birthday'          => $s['missingBirthday'],
+            'email'             => $s['missingEmail'],
+            'mobile'            => $s['missingMobile'],
+            'user'              => $s['missingUser'],
+            'noMembership'      => $s['noMembership'],
+            'activeNoActive'    => $s['activeNoActive'],
+            'orphanedDependent' => $s['orphanedDependent'],
+        ];
     }
 
     // ─────────────────────────────────────────────────────────────────────────

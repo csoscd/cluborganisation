@@ -9,7 +9,32 @@
             <option value="1">JYES</option>
             <option value="0">JNO</option>
         </field>
-        <field name="ordering" type="number" label="COM_CLUBORGANISATION_FIELD_ORDERING" 
+        <field name="ordering" type="number" label="COM_CLUBORGANISATION_FIELD_ORDERING"
                default="0" />
+
+        <field
+            name="is_dependent"
+            type="radio"
+            label="COM_CLUBORGANISATION_FIELD_IS_DEPENDENT"
+            description="COM_CLUBORGANISATION_FIELD_IS_DEPENDENT_DESC"
+            default="0"
+            class="btn-group"
+        >
+            <option value="0">JNO</option>
+            <option value="1">JYES</option>
+        </field>
+
+        <field
+            name="depends_on_type"
+            type="sql"
+            label="COM_CLUBORGANISATION_FIELD_DEPENDS_ON_TYPE"
+            description="COM_CLUBORGANISATION_FIELD_DEPENDS_ON_TYPE_DESC"
+            query="SELECT id, title FROM #__cluborganisation_membershiptypes WHERE published = 1 AND (is_dependent = 0 OR is_dependent IS NULL) ORDER BY ordering"
+            key_field="id"
+            value_field="title"
+            showon="is_dependent:1"
+        >
+            <option value="">COM_CLUBORGANISATION_SELECT_DEPENDS_ON_TYPE</option>
+        </field>
     </fieldset>
 </form>

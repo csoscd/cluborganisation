@@ -13,6 +13,7 @@ defined('_JEXEC') or die;
 use Joomla\CMS\Table\Table;
 use Joomla\Database\DatabaseDriver;
 use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 
 /**
  * Membershiptype Fee Table Klasse
@@ -44,23 +45,23 @@ class MembershiptypefeeTable extends Table
     {
         // Prüfe Pflichtfelder
         if (empty($this->membershiptype_id)) {
-            $this->setError('COM_CLUBORGANISATION_ERROR_MEMBERSHIPTYPE_REQUIRED');
+            $this->setError(Text::_('COM_CLUBORGANISATION_ERROR_MEMBERSHIPTYPE_REQUIRED'));
             return false;
         }
 
         if (empty($this->begin)) {
-            $this->setError('COM_CLUBORGANISATION_ERROR_BEGIN_DATE_REQUIRED');
+            $this->setError(Text::_('COM_CLUBORGANISATION_ERROR_BEGIN_DATE_REQUIRED'));
             return false;
         }
 
         if (!isset($this->amount) || $this->amount === '') {
-            $this->setError('COM_CLUBORGANISATION_ERROR_AMOUNT_REQUIRED');
+            $this->setError(Text::_('COM_CLUBORGANISATION_ERROR_AMOUNT_REQUIRED'));
             return false;
         }
 
         // Validiere amount (muss >= 0 sein)
         if ($this->amount < 0) {
-            $this->setError('COM_CLUBORGANISATION_ERROR_AMOUNT_NEGATIVE');
+            $this->setError(Text::_('COM_CLUBORGANISATION_ERROR_AMOUNT_NEGATIVE'));
             return false;
         }
 

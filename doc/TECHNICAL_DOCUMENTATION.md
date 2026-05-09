@@ -1,7 +1,7 @@
 # ClubOrganisation – Technical Documentation
 
-**Version:** 2.1.0  
-**Joomla:** 5.x / 6.x  
+**Version:** 2.3.0
+**Joomla:** 5.x / 6.x
 **PHP:** 8.1+
 
 ---
@@ -163,8 +163,10 @@ New `reporting` fieldset in `config.xml` with field `statistics_start_year` (def
 
 ```
 persons (1) ──< (n) memberships (n) >── (1) membershiptypes
+   │                    │                        │
+   │             (1) ──< (0..n) membershipbanks  │ (self-ref: depends_on_type)
    │                    │
-   │             (1) ──< (0..n) membershipbanks
+   │             memberships.depends_on_membership_id ──> memberships.id
    │
 (n) >── (1) salutations
 ```
@@ -187,6 +189,138 @@ WHERE b.begin <= CURDATE()
 WHERE (SELECT COUNT(*) FROM #__cluborganisation_memberships m
        WHERE m.person_id = p.id AND m.end IS NULL) = 0
 ```
+
+---
+
+## Dependent Membership Types (new in 2.3.0)
+
+### Concept
+
+A membership type can be marked as *dependent* (`is_dependent = 1`) and linked to a *parent type* (`depends_on_type → membershiptypes.id`). When creating a membership of a dependent type, the user must select an existing membership of the parent type (`depends_on_membership_id → memberships.id`).
+
+**Example:** "Familienmitglied (zahlend)" is the paying parent type. "Familienmitglied" is the dependent type. Every membership of type "Familienmitglied" must reference a specific membership of type "Familienmitglied (zahlend)".
+
+### Database Columns
+
+**`membershiptypes`:**
+
+| Column | Type | Description |
+|---|---|---|
+| `is_dependent` | TINYINT(1) | 0 = normal type, 1 = dependent type |
+| `depends_on_type` | INT UNSIGNED | FK → membershiptypes.id (the parent type) |
+
+**`memberships`:**
+
+| Column | Type | Description |
+|---|---|---|
+| `depends_on_membership_id` | INT UNSIGNED | FK → memberships.id (the parent membership) |
+
+### Validation (`MembershipTable::checkDependentType()`)
+
+Called from `check()` before every save:
+
+```
+1. Load is_dependent + depends_on_type for $this->type
+2. If is_dependent = 0 → pass
+3. If is_dependent = 1 and depends_on_membership_id is empty → error
+4. Load the referenced parent membership
+5. Check that parent membership's type equals depends_on_type → error if not
+```
+
+### Cascade: Setting an End Date
+
+When `MembershipModel::save()` is called and `$data['end']` is set, after a successful save `cascadeEndDateToDependents()` is invoked:
+
+```php
+private function cascadeEndDateToDependents(int $parentId, string $endDate): void
+{
+    // UPDATE memberships
+    // SET end = $endDate
+    // WHERE depends_on_membership_id = $parentId
+    //   AND (end IS NULL OR end > $endDate)
+}
+```
+
+Condition `end IS NULL OR end > $endDate` ensures dependents that already have an *earlier* end date are never modified.
+
+### Cascade: Removing an End Date
+
+When the parent membership's end date is *cleared*, `cascadeRemoveEndDateFromDependents()` is invoked with the *previous* end date (read from DB before the save):
+
+```php
+private function cascadeRemoveEndDateFromDependents(int $parentId, string $oldEndDate): void
+{
+    // UPDATE memberships
+    // SET end = NULL
+    // WHERE depends_on_membership_id = $parentId
+    //   AND end = $oldEndDate
+}
+```
+
+The exact-match condition (`end = $oldEndDate`) means only dependents whose end date was *inherited* from the parent are reverted. Dependents with a manually set (earlier) end date are left unchanged.
+
+### Pre-Save Old End Date Read
+
+`MembershipModel::save()` reads the current end date from the database *before* calling `parent::save()`:
+
+```php
+$oldEnd = null;
+if ($itemId > 0) {
+    $oldRow = $db->setQuery(
+        $db->getQuery(true)->select('end')->from('#__cluborganisation_memberships')->where('id = ' . $itemId)
+    )->loadObject();
+    $oldEnd = $oldRow ? ($oldRow->end ?: null) : null;
+}
+$result = parent::save($data);
+if ($result) {
+    if ($newEnd !== null) {
+        $this->cascadeEndDateToDependents($savedId, $newEnd);
+    } elseif ($oldEnd !== null && $newEnd === null) {
+        $this->cascadeRemoveEndDateFromDependents($savedId, $oldEnd);
+    }
+}
+```
+
+### `has_dependents` Detection in the View
+
+`Membership/HtmlView` must know, for each type, whether other types depend on it (so it can show a cascade warning). This is resolved server-side:
+
+```php
+// 1. Load all types with their is_dependent / depends_on_type flags
+$membershipTypes = $db->loadObjectList('id');
+
+// 2. Collect all type IDs that are referenced as a parent
+$parentTypeIds = $db->loadColumn(); // SELECT DISTINCT depends_on_type WHERE is_dependent=1
+
+// 3. Flag each type
+foreach ($membershipTypes as $mt) {
+    $mt->has_dependents = in_array($mt->id, $parentTypeIds);
+}
+```
+
+This data is serialised as JSON and passed to the template's JavaScript so the warning box can be shown/hidden dynamically when the user changes the type dropdown.
+
+### Dynamic Parent Membership Dropdown
+
+The `depends_on_membership_id` field is an empty `<select>` in `membership.xml`. Its options are loaded on the fly via AJAX:
+
+```
+type dropdown change
+    → fetch task=membership.getParentMemberships&type_id=X
+    → MembershipController::getParentMemberships()
+    → DB: load memberships of parent type (across all persons)
+    → JSON: {success, is_dependent, data:[{id, begin, end, person_name}]}
+    → JS populates <select> or hides the wrapper
+```
+
+### Cascade Warning Box
+
+A `#co-cascade-warning` alert div is rendered by PHP (hidden by default). JavaScript shows it whenever the selected type has `has_dependents = true`. The message distinguishes between the save-with-end-date and the save-without-end-date scenarios via two language constants:
+
+| Constant | Trigger |
+|---|---|
+| `MEMBERSHIP_CASCADE_WARNING` | Type has dependents (always shown when has_dependents) |
+| `MEMBERSHIP_CASCADE_WARNING_COUNT` | Count of currently linked dependent memberships |
 
 ---
 
@@ -325,4 +459,4 @@ WHERE person_id = :id AND end IS NULL
 
 ---
 
-**Date:** February 2026 · **Version:** 2.1.0
+**Date:** March 2026 · **Version:** 2.3.0

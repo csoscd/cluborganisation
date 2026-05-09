@@ -1,6 +1,6 @@
 # ClubOrganisation – Joomla 5/6 Komponente
 
-**Version:** 2.1.0  
+**Version:** 2.3.0
 **Lizenz:** GPLv3 (siehe LICENSE)
 
 ---
@@ -38,6 +38,7 @@ Vollständige Joomla-Komponente zur Verwaltung von Vereinsmitgliedschaften.
 - Zeitraum-basiert (Begin/End), maximal eine aktive gleichzeitig
 - Typ-Kategorisierung (Einzelmitglied, Familie, etc.)
 - Überschneidungsprüfung beim Speichern
+- **Abhängige Mitgliedschaftstypen** (neu in 2.3.0): beitragsfreie Typen (z. B. Familienmitglied) können einem zahlenden übergeordneten Typ zugeordnet werden; Enddaten werden automatisch kaskadiert
 
 #### Bankverbindungen
 - AES-256-CBC Verschlüsselung (Kontoinhaber, IBAN, BIC)
@@ -176,4 +177,4 @@ GNU General Public License version 3 or later – siehe `LICENSE`.
 
 ---
 
-**Version:** 2.1.0 · **Stand:** Februar 2026
+**Version:** 2.3.0 · **Stand:** März 2026

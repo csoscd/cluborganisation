@@ -23,6 +23,54 @@ use Joomla\CMS\Session\Session;
  *
  * @return void
  */
+/**
+ * Gibt eine Mitgliedschafts-Tabelle (nicht person-zentriert) für den Orphan-Check aus.
+ *
+ * @param  array   $rows      Ergebnis-Array mit id (membership), firstname, lastname, begin, end
+ * @param  string  $emptyKey  Sprachkonstante für "Alle OK"-Meldung
+ *
+ * @return void
+ */
+function co_datacheck_membership_table(array $rows, string $emptyKey): void
+{
+    if (empty($rows)) : ?>
+        <p class="text-success fw-semibold">
+            <span class="icon-check" aria-hidden="true"></span>
+            <?php echo Text::_($emptyKey); ?>
+        </p>
+    <?php return;
+    endif; ?>
+    <table class="table co-dc-table">
+        <thead>
+            <tr>
+                <th><?php echo Text::_('COM_CLUBORGANISATION_DATACHECK_COL_NAME'); ?></th>
+                <th><?php echo Text::_('COM_CLUBORGANISATION_DATACHECK_COL_PERIOD'); ?></th>
+                <th class="text-end" style="width:6rem">
+                    <?php echo Text::_('COM_CLUBORGANISATION_DATACHECK_COL_ACTIONS'); ?>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+        <?php foreach ($rows as $row) :
+            $endLabel = !empty($row['end']) ? $row['end'] : Text::_('COM_CLUBORGANISATION_ONGOING');
+        ?>
+            <tr>
+                <td><?php echo htmlspecialchars($row['lastname'] . ', ' . $row['firstname'], ENT_QUOTES, 'UTF-8'); ?></td>
+                <td><?php echo htmlspecialchars($row['begin'] . ' – ' . $endLabel, ENT_QUOTES, 'UTF-8'); ?></td>
+                <td class="text-end">
+                    <a href="index.php?option=com_cluborganisation&view=membership&layout=edit&id=<?php echo (int) $row['id']; ?>"
+                       class="btn btn-sm btn-outline-secondary"
+                       title="<?php echo Text::_('COM_CLUBORGANISATION_DATACHECK_COL_EDIT'); ?>">
+                        <span class="icon-edit" aria-hidden="true"></span>
+                    </a>
+                </td>
+            </tr>
+        <?php endforeach; ?>
+        </tbody>
+    </table>
+<?php
+}
+
 function co_datacheck_table(array $rows, string $emptyKey, bool $showDeactivate = false): void
 {
     if (empty($rows)) : ?>
@@ -161,6 +209,8 @@ $groups = [
         'showDeactivate' => true,
     ],
 ];
+
+$orphanedRows = $this->orphanedDependentMemberships;
 ?>
 
 <div class="container-fluid px-0">
@@ -183,5 +233,23 @@ $groups = [
         <?php co_datacheck_table($group['rows'], $group['emptyKey'], $group['showDeactivate']); ?>
     </div>
     <?php endforeach; ?>
+
+    <?php
+    // Orphaned-Block separat, da andere Tabellenstruktur (Mitgliedschaft, nicht Person)
+    $orphanedCount   = count($orphanedRows);
+    $orphanedBadge   = $orphanedCount === 0
+        ? 'co-dc-badge co-dc-badge-ok'
+        : 'co-dc-badge co-dc-badge-warn';
+    $orphanedBadgeText = $orphanedCount === 0
+        ? Text::_('COM_CLUBORGANISATION_DATACHECK_OK')
+        : Text::sprintf('COM_CLUBORGANISATION_DATACHECK_COUNT', $orphanedCount);
+    ?>
+    <div class="co-dc-card">
+        <h3>
+            <span><?php echo Text::_('COM_CLUBORGANISATION_DATACHECK_ORPHANED_DEPENDENT'); ?></span>
+            <span class="<?php echo $orphanedBadge; ?>"><?php echo $orphanedBadgeText; ?></span>
+        </h3>
+        <?php co_datacheck_membership_table($orphanedRows, 'COM_CLUBORGANISATION_DATACHECK_COMPLETE'); ?>
+    </div>
 
 </div><!-- /.container-fluid -->
