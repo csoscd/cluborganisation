@@ -19,6 +19,8 @@ CREATE TABLE IF NOT EXISTS `#__cluborganisation_membershiptypes` (
     `title` VARCHAR(100) NOT NULL,
     `published` TINYINT(1) NOT NULL DEFAULT 1,
     `ordering` INT(11) NOT NULL DEFAULT 0,
+    `is_dependent` TINYINT(1) NOT NULL DEFAULT 0 COMMENT 'Abhängiger Typ (zahlt nicht selbst)',
+    `depends_on_type` INT(11) UNSIGNED DEFAULT NULL COMMENT 'ID des übergeordneten Mitgliedschaftstyps',
     `checked_out` INT(11) UNSIGNED,
     `checked_out_time` DATETIME,
     PRIMARY KEY (`id`)
@@ -69,6 +71,7 @@ CREATE TABLE IF NOT EXISTS `#__cluborganisation_memberships` (
     `end` DATE DEFAULT NULL,
     `comment` TEXT,
     `catid` INT(11) UNSIGNED,
+    `depends_on_membership_id` INT(11) UNSIGNED DEFAULT NULL COMMENT 'ID der übergeordneten Mitgliedschaft (bei abhängigen Typen)',
     `checked_out` INT(11) UNSIGNED,
     `checked_out_time` DATETIME,
     `created` DATETIME NOT NULL,
@@ -80,7 +83,8 @@ CREATE TABLE IF NOT EXISTS `#__cluborganisation_memberships` (
     KEY `idx_type` (`type`),
     KEY `idx_begin` (`begin`),
     KEY `idx_end` (`end`),
-    KEY `idx_catid` (`catid`)
+    KEY `idx_catid` (`catid`),
+    KEY `idx_depends_on_membership` (`depends_on_membership_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 DEFAULT COLLATE=utf8mb4_unicode_ci;
 
 -- Tabelle für Bankverbindungen

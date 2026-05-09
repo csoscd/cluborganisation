@@ -1,7 +1,76 @@
 # Changelog – ClubOrganisation
 
-All notable changes to this project are documented in this file.  
+All notable changes to this project are documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/).
+
+---
+
+## [2.3.0] – 2026-03-09
+
+### New: Dependent Membership Types
+
+Allows membership types to be configured as dependent on another type (e.g. non-paying family members who depend on a paying family member).
+
+#### Membership Types (Master Data)
+
+- New field **Dependent Type** (Yes/No) per membership type
+- New field **Depends On Type**: select the parent type (only visible when "Dependent Type = Yes" via `showon`)
+- Only non-dependent types can be selected as parent (no type chains)
+- List view shows new "Dependent Type" column with badge and parent type title
+
+#### Membership Form
+
+- New field **Parent Membership**: dynamic dropdown showing all active memberships of the parent type (any person)
+- Field only appears when a dependent type is selected (JavaScript + AJAX)
+- AJAX endpoint: `task=membership.getParentMemberships&type_id=X&format=json`
+- When editing an existing dependent membership, the saved selection is restored on page load
+- Warning box (yellow alert) when the selected type has dependent types:
+  - Shows count of linked memberships when known
+  - Explains both cascade directions (setting and removing end date)
+
+#### End Date Cascade
+
+When a parent membership's end date is saved or changed, all dependent memberships are automatically updated:
+
+| Situation | Behaviour |
+|---|---|
+| End date set/changed | Dependents without end date or with a later end date are updated |
+| Dependents with earlier end date | **Not changed** |
+| End date removed | Dependents that share the **same** end date are also set to open-ended |
+| Dependents with a different (earlier) end date | **Not changed** |
+
+#### Validation
+
+- Required field: a parent membership must be selected for dependent types
+- Type check: the selected parent membership must be of the configured parent type
+
+#### Database Changes
+
+| Table | New Column | Description |
+|---|---|---|
+| `#__cluborganisation_membershiptypes` | `is_dependent` TINYINT(1) | Dependent type flag (0/1) |
+| `#__cluborganisation_membershiptypes` | `depends_on_type` INT UNSIGNED | FK to parent type |
+| `#__cluborganisation_memberships` | `depends_on_membership_id` INT UNSIGNED | FK to parent membership |
+
+#### New / Changed Files
+
+| File | Change |
+|---|---|
+| `2.3.0.sql` | New: database update script |
+| `mysql_install.sql` | New columns in both tables |
+| `cluborganisation.xml` | Version 2.3.0, date March 2026 |
+| `membershiptype.xml` | 2 new form fields |
+| `membershiptype_edit.php` | New fields rendered |
+| `MembershiptypesModel.php` | JOIN on parent type, `parent_type_title` |
+| `membershiptypes_default.php` | New column in list |
+| `membership.xml` | New field `depends_on_membership_id` |
+| `MembershipController.php` | AJAX task `getParentMemberships` |
+| `MembershipTable.php` | Validation `checkDependentType()` |
+| `MembershipModel.php` | Cascade logic in `save()`, two private helpers |
+| `MembershipHtmlView.php` | Type dependency info + dependent membership count |
+| `membership_edit.php` | JS logic, warning box, field rendering |
+| `de-DE.com_cluborganisation.ini` | New language constants |
+| `en-GB.com_cluborganisation.ini` | New language constants |
 
 ---
 

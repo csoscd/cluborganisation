@@ -36,8 +36,11 @@ class HtmlView extends BaseHtmlView
     /** @var array  Aktive Personen ohne jede Mitgliedschaft */
     protected $noMembership;
 
-    /** @var array  Aktive Personen ohne aktive Mitgliedschaft (kein end=NULL) */
+    /** @var array  Aktive Personen ohne aktive Mitgliedschaft (kein end=NULL und kein zukünftiges Ende) */
     protected $activeNoActiveMembership;
+
+    /** @var array  Abhängige Mitgliedschaften ohne vorhandenen übergeordneten Datensatz */
+    protected $orphanedDependentMemberships;
 
     public function display($tpl = null)
     {
@@ -48,8 +51,9 @@ class HtmlView extends BaseHtmlView
         $this->missingEmail            = $model->getMissingEmail();
         $this->missingMobile           = $model->getMissingMobile();
         $this->missingUser             = $model->getMissingUser();
-        $this->noMembership            = $model->getNoMembership();
-        $this->activeNoActiveMembership = $model->getActivePersonsWithoutActiveMembership();
+        $this->noMembership                 = $model->getNoMembership();
+        $this->activeNoActiveMembership     = $model->getActivePersonsWithoutActiveMembership();
+        $this->orphanedDependentMemberships = $model->getOrphanedDependentMemberships();
 
         if (count($errors = $this->get('Errors'))) {
             throw new \Exception(implode("\n", $errors), 500);

@@ -47,7 +47,7 @@ class DatacheckModel extends BaseDatabaseModel
         $sqOpen = $db->getQuery(true);
         $sqOpen->select('DISTINCT ' . $db->quoteName('person_id'))
             ->from($db->quoteName('#__cluborganisation_memberships'))
-            ->where($db->quoteName('end') . ' IS NULL');
+            ->where('(' . $db->quoteName('end') . ' IS NULL OR ' . $db->quoteName('end') . ' >= CURDATE())');
 
         $query->select($cols)
             ->from($db->quoteName('#__cluborganisation_persons', 'p'))
@@ -241,11 +241,11 @@ class DatacheckModel extends BaseDatabaseModel
     {
         $db = $this->getDbo();
 
-        // Personen-IDs mit mind. einer end=NULL-Mitgliedschaft
+        // Personen-IDs mit mind. einer laufenden Mitgliedschaft (kein Ende oder Ende in der Zukunft)
         $sqOpen = $db->getQuery(true);
         $sqOpen->select('DISTINCT ' . $db->quoteName('person_id'))
             ->from($db->quoteName('#__cluborganisation_memberships'))
-            ->where($db->quoteName('end') . ' IS NULL');
+            ->where('(' . $db->quoteName('end') . ' IS NULL OR ' . $db->quoteName('end') . ' >= CURDATE())');
 
         $query = $db->getQuery(true);
         $query->select([
@@ -262,15 +262,50 @@ class DatacheckModel extends BaseDatabaseModel
         return $db->loadAssocList() ?: [];
     }
 
+    /**
+     * Abhängige Mitgliedschaften, deren übergeordneter Datensatz nicht mehr existiert.
+     *
+     * @return  array  [['id' => membership_id, 'firstname' => '...', 'lastname' => '...', 'begin' => '...', 'end' => '...', 'depends_on_membership_id' => n], ...]
+     *
+     * @since   2.3.0
+     */
+    public function getOrphanedDependentMemberships(): array
+    {
+        $db    = $this->getDbo();
+        $query = $db->getQuery(true)
+            ->select([
+                $db->quoteName('m.id'),
+                $db->quoteName('m.begin'),
+                $db->quoteName('m.end'),
+                $db->quoteName('m.depends_on_membership_id'),
+                $db->quoteName('p.firstname'),
+                $db->quoteName('p.lastname'),
+            ])
+            ->from($db->quoteName('#__cluborganisation_memberships', 'm'))
+            ->join('LEFT', $db->quoteName('#__cluborganisation_persons', 'p') . ' ON ' . $db->quoteName('p.id') . ' = ' . $db->quoteName('m.person_id'))
+            ->where($db->quoteName('m.depends_on_membership_id') . ' IS NOT NULL')
+            ->where('NOT EXISTS ('
+                . $db->getQuery(true)
+                    ->select('1')
+                    ->from($db->quoteName('#__cluborganisation_memberships', 'parent'))
+                    ->where($db->quoteName('parent.id') . ' = ' . $db->quoteName('m.depends_on_membership_id'))
+                . ')')
+            ->order($db->quoteName('p.lastname') . ' ASC, ' . $db->quoteName('p.firstname') . ' ASC');
+
+        $db->setQuery($query);
+        return $db->loadAssocList() ?: [];
+    }
+
     public function getSummary(): array
     {
         return [
-            'missingBirthday' => count($this->getMissingBirthday()),
-            'missingEmail'    => count($this->getMissingEmail()),
-            'missingMobile'   => count($this->getMissingMobile()),
-            'missingUser'     => count($this->getMissingUser()),
-            'noMembership'    => count($this->getNoMembership()),
-            'activeNoActive'  => count($this->getActivePersonsWithoutActiveMembership()),
+            'missingBirthday'     => count($this->getMissingBirthday()),
+            'missingEmail'        => count($this->getMissingEmail()),
+            'missingMobile'       => count($this->getMissingMobile()),
+            'missingUser'         => count($this->getMissingUser()),
+            'noMembership'        => count($this->getNoMembership()),
+            'activeNoActive'      => count($this->getActivePersonsWithoutActiveMembership()),
+            'orphanedDependent'   => count($this->getOrphanedDependentMemberships()),
         ];
     }
 }

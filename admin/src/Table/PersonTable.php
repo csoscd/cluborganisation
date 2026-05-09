@@ -13,6 +13,7 @@ defined('_JEXEC') or die;
 use Joomla\CMS\Table\Table;
 use Joomla\Database\DatabaseDriver;
 use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 
 /**
  * Person Table Klasse
@@ -97,28 +98,28 @@ class PersonTable extends Table
     {
         // Prüfe Pflichtfelder
         if (empty($this->firstname)) {
-            $this->setError('COM_CLUBORGANISATION_ERROR_FIRSTNAME_REQUIRED');
+            $this->setError(Text::_('COM_CLUBORGANISATION_ERROR_FIRSTNAME_REQUIRED'));
             return false;
         }
 
         if (empty($this->lastname)) {
-            $this->setError('COM_CLUBORGANISATION_ERROR_LASTNAME_REQUIRED');
+            $this->setError(Text::_('COM_CLUBORGANISATION_ERROR_LASTNAME_REQUIRED'));
             return false;
         }
 
         if (empty($this->email)) {
-            $this->setError('COM_CLUBORGANISATION_ERROR_EMAIL_REQUIRED');
+            $this->setError(Text::_('COM_CLUBORGANISATION_ERROR_EMAIL_REQUIRED'));
             return false;
         }
 
         if (empty($this->member_no)) {
-            $this->setError('COM_CLUBORGANISATION_ERROR_MEMBER_NO_REQUIRED');
+            $this->setError(Text::_('COM_CLUBORGANISATION_ERROR_MEMBER_NO_REQUIRED'));
             return false;
         }
 
         // Validiere E-Mail-Format
         if (!filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
-            $this->setError('COM_CLUBORGANISATION_ERROR_EMAIL_INVALID');
+            $this->setError(Text::_('COM_CLUBORGANISATION_ERROR_EMAIL_INVALID'));
             return false;
         }
 
@@ -137,7 +138,7 @@ class PersonTable extends Table
         $count = $db->loadResult();
 
         if ($count > 0) {
-            $this->setError('COM_CLUBORGANISATION_ERROR_MEMBER_NO_EXISTS');
+            $this->setError(Text::_('COM_CLUBORGANISATION_ERROR_MEMBER_NO_EXISTS'));
             return false;
         }
 

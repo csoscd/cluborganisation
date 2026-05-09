@@ -26,7 +26,8 @@ $datacheckItems = [
     'mobile'      => Text::_('COM_CLUBORGANISATION_DATACHECK_MISSING_MOBILE'),
     'user'        => Text::_('COM_CLUBORGANISATION_DATACHECK_NO_USER'),
     'noMembership'=> Text::_('COM_CLUBORGANISATION_DATACHECK_NO_MEMBERSHIP'),
-    'activeNoActive'=> Text::_('COM_CLUBORGANISATION_DATACHECK_ACTIVE_NO_ACTIVE_MEMBERSHIP'),
+    'activeNoActive'    => Text::_('COM_CLUBORGANISATION_DATACHECK_ACTIVE_NO_ACTIVE_MEMBERSHIP'),
+    'orphanedDependent' => Text::_('COM_CLUBORGANISATION_DATACHECK_ORPHANED_DEPENDENT'),
 ];
 ?>
 <style>

@@ -72,6 +72,16 @@
         >
             <option value="0">JOPTION_SELECT_CATEGORY</option>
         </field>
+
+        <field
+            name="depends_on_membership_id"
+            type="list"
+            label="COM_CLUBORGANISATION_FIELD_DEPENDS_ON_MEMBERSHIP"
+            description="COM_CLUBORGANISATION_FIELD_DEPENDS_ON_MEMBERSHIP_DESC"
+            class="form-select"
+        >
+            <option value="">COM_CLUBORGANISATION_SELECT_PARENT_MEMBERSHIP</option>
+        </field>
     </fieldset>
 
     <fieldset name="publishing">

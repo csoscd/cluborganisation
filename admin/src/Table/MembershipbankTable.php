@@ -13,6 +13,7 @@ defined('_JEXEC') or die;
 use Joomla\CMS\Table\Table;
 use Joomla\Database\DatabaseDriver;
 use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 use CSOSCD\Component\ClubOrganisation\Administrator\Helper\EncryptionHelper;
 
 /**
@@ -41,32 +42,32 @@ class MembershipbankTable extends Table
     public function check()
     {
         if (empty($this->membership_id)) {
-            $this->setError('COM_CLUBORGANISATION_ERROR_MEMBERSHIP_REQUIRED');
+            $this->setError(Text::_('COM_CLUBORGANISATION_ERROR_MEMBERSHIP_REQUIRED'));
             return false;
         }
 
         if (empty($this->accountname)) {
-            $this->setError('COM_CLUBORGANISATION_ERROR_ACCOUNTNAME_REQUIRED');
+            $this->setError(Text::_('COM_CLUBORGANISATION_ERROR_ACCOUNTNAME_REQUIRED'));
             return false;
         }
 
         if (empty($this->iban)) {
-            $this->setError('COM_CLUBORGANISATION_ERROR_IBAN_REQUIRED');
+            $this->setError(Text::_('COM_CLUBORGANISATION_ERROR_IBAN_REQUIRED'));
             return false;
         }
 
         if (!$this->isEncrypted($this->iban) && !$this->validateIBAN($this->iban)) {
-            $this->setError('COM_CLUBORGANISATION_ERROR_IBAN_INVALID');
+            $this->setError(Text::_('COM_CLUBORGANISATION_ERROR_IBAN_INVALID'));
             return false;
         }
 
         if (!empty($this->bic) && !$this->isEncrypted($this->bic) && !$this->validateBIC($this->bic)) {
-            $this->setError('COM_CLUBORGANISATION_ERROR_BIC_INVALID');
+            $this->setError(Text::_('COM_CLUBORGANISATION_ERROR_BIC_INVALID'));
             return false;
         }
 
         if (empty($this->begin)) {
-            $this->setError('COM_CLUBORGANISATION_ERROR_BEGIN_REQUIRED');
+            $this->setError(Text::_('COM_CLUBORGANISATION_ERROR_BEGIN_REQUIRED'));
             return false;
         }
 
@@ -85,19 +86,19 @@ class MembershipbankTable extends Table
 
             // Neue Bankverbindung: Mitgliedschaft darf nicht beendet sein
             if (!$this->id && !empty($membership->mend) && $membership->mend < $today) {
-                $this->setError('COM_CLUBORGANISATION_ERROR_BANK_MEMBERSHIP_ENDED');
+                $this->setError(Text::_('COM_CLUBORGANISATION_ERROR_BANK_MEMBERSHIP_ENDED'));
                 return false;
             }
 
             // Beginn nicht vor Mitgliedschaftsbeginn
             if (!empty($membership->mbegin) && $bankBegin < $membership->mbegin) {
-                $this->setError('COM_CLUBORGANISATION_ERROR_BANK_BEGIN_BEFORE_MEMBERSHIP');
+                $this->setError(Text::_('COM_CLUBORGANISATION_ERROR_BANK_BEGIN_BEFORE_MEMBERSHIP'));
                 return false;
             }
 
             // Beginn nicht nach Mitgliedschaftsende
             if (!empty($membership->mend) && $bankBegin > $membership->mend) {
-                $this->setError('COM_CLUBORGANISATION_ERROR_BANK_BEGIN_AFTER_MEMBERSHIP_END');
+                $this->setError(Text::_('COM_CLUBORGANISATION_ERROR_BANK_BEGIN_AFTER_MEMBERSHIP_END'));
                 return false;
             }
         }
@@ -144,7 +145,7 @@ class MembershipbankTable extends Table
         $encryptionKey = EncryptionHelper::getEncryptionKey();
 
         if (!$encryptionKey) {
-            $this->setError('COM_CLUBORGANISATION_ERROR_NO_ENCRYPTION_KEY');
+            $this->setError(Text::_('COM_CLUBORGANISATION_ERROR_NO_ENCRYPTION_KEY'));
             return false;
         }
 

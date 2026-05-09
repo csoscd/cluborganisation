@@ -15,14 +15,31 @@ use Joomla\CMS\Router\Route;
     <table class="table table-striped">
         <thead><tr>
             <td class="w-1"><?php echo HTMLHelper::_('grid.checkall'); ?></td>
-            <th>ID</th><th>Titel</th><th>Reihenfolge</th>
+            <th>ID</th>
+            <th><?php echo Text::_('COM_CLUBORGANISATION_FIELD_TITLE'); ?></th>
+            <th><?php echo Text::_('COM_CLUBORGANISATION_FIELD_IS_DEPENDENT'); ?></th>
+            <th><?php echo Text::_('COM_CLUBORGANISATION_FIELD_ORDERING'); ?></th>
         </tr></thead>
         <tbody>
         <?php foreach ($this->items as $i => $item) : ?>
             <tr>
                 <td><?php echo HTMLHelper::_('grid.id', $i, $item->id); ?></td>
                 <td><?php echo $item->id; ?></td>
-                <td><?php echo $this->escape($item->title); ?></td>
+                <td>
+                    <a href="<?php echo Route::_('index.php?option=com_cluborganisation&task=membershiptype.edit&id=' . (int) $item->id); ?>">
+                        <?php echo $this->escape($item->title); ?>
+                    </a>
+                </td>
+                <td>
+                    <?php if ($item->is_dependent) : ?>
+                        <span class="badge bg-info"><?php echo Text::_('JYES'); ?></span>
+                        <?php if (!empty($item->parent_type_title)) : ?>
+                            <small class="text-muted">(<?php echo $this->escape($item->parent_type_title); ?>)</small>
+                        <?php endif; ?>
+                    <?php else : ?>
+                        <span class="badge bg-secondary"><?php echo Text::_('JNO'); ?></span>
+                    <?php endif; ?>
+                </td>
                 <td><?php echo $item->ordering; ?></td>
             </tr>
         <?php endforeach; ?>

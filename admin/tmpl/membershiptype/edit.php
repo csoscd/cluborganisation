@@ -24,6 +24,8 @@ HTMLHelper::_('behavior.keepalive');
                     <?php echo $this->form->renderField('title'); ?>
                     <?php echo $this->form->renderField('published'); ?>
                     <?php echo $this->form->renderField('ordering'); ?>
+                    <?php echo $this->form->renderField('is_dependent'); ?>
+                    <?php echo $this->form->renderField('depends_on_type'); ?>
                 </div>
             </div>
         </div>

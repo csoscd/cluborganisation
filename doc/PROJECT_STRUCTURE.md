@@ -1,6 +1,6 @@
 # ClubOrganisation – Projektstruktur
 
-**Version:** 2.0.0  
+**Version:** 2.3.0
 **Joomla:** 5.x / 6.x
 
 ---
@@ -217,6 +217,7 @@ cluborganisation/
 | `begin` | DATE | Beginn der Mitgliedschaft |
 | `end` | DATE | Ende (NULL = aktiv) |
 | `comment` | TEXT | Kommentar |
+| `depends_on_membership_id` | INT UNSIGNED | FK → memberships.id (übergeordnete Mitgliedschaft, nur bei abhängigen Typen) |
 
 ### membershipbanks
 
@@ -228,6 +229,17 @@ cluborganisation/
 | `iban` | TEXT | IBAN (AES-256 verschlüsselt) |
 | `bic` | TEXT | BIC (AES-256 verschlüsselt) |
 | `begin` | DATE | Gültig ab |
+
+### membershiptypes
+
+| Spalte | Typ | Beschreibung |
+|---|---|---|
+| `id` | INT UNSIGNED | Primärschlüssel |
+| `title` | VARCHAR(100) | Bezeichnung |
+| `published` | TINYINT(1) | Veröffentlicht |
+| `ordering` | INT | Reihenfolge |
+| `is_dependent` | TINYINT(1) | Abhängiger Typ (0 = nein, 1 = ja) |
+| `depends_on_type` | INT UNSIGNED | FK → membershiptypes.id (übergeordneter Typ) |
 
 ---
 
@@ -305,4 +317,4 @@ public function onBeforeApiRoute(&$router): void
 
 ---
 
-**Stand:** Februar 2026 · **Version:** 2.0.0
+**Stand:** März 2026 · **Version:** 2.3.0

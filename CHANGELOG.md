@@ -1,7 +1,76 @@
 # Changelog – ClubOrganisation
 
-Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.  
+Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/).
+
+---
+
+## [2.3.0] – 2026-03-09
+
+### Neu: Abhängige Mitgliedschaftstypen
+
+Ermöglicht die Konfiguration von Mitgliedschaftstypen, die von einem anderen Typ abhängen (z. B. beitragsfreie Familienmitglieder, die von einem zahlenden Familienmitglied abhängen).
+
+#### Mitgliedschaftstypen (Stammdaten)
+
+- Neues Feld **Abhängiger Typ** (Ja/Nein) pro Mitgliedschaftstyp
+- Neues Feld **Hängt ab von Typ**: Auswahl des übergeordneten Typs (nur bei „Abhängiger Typ = Ja" sichtbar via `showon`)
+- Nur nicht-abhängige Typen können als übergeordneter Typ gewählt werden (keine Typ-Ketten)
+- Übersichtsliste zeigt neue Spalte „Abhängiger Typ" mit Badge und Bezeichnung des übergeordneten Typs
+
+#### Mitgliedschaftsformular
+
+- Neues Feld **Übergeordnete Mitgliedschaft**: dynamisches Dropdown, das alle aktiven Mitgliedschaften des übergeordneten Typs (beliebige Person) anzeigt
+- Feld erscheint nur bei Auswahl eines abhängigen Typs (JavaScript + AJAX)
+- AJAX-Endpunkt: `task=membership.getParentMemberships&type_id=X&format=json`
+- Bei Bearbeitung einer bestehenden abhängigen Mitgliedschaft wird die gespeicherte Auswahl wiederhergestellt
+- Warnhinweis (gelbe Alert-Box) wenn der gewählte Typ abhängige Typen hat:
+  - Bei bekannter Anzahl: konkreter Zähler der verknüpften Mitgliedschaften
+  - Erläuterung beider Kaskaden-Richtungen (Setzen und Entfernen des Enddatums)
+
+#### Kaskadierung des Enddatums
+
+Wird eine übergeordnete Mitgliedschaft mit einem Enddatum gespeichert oder das Enddatum geändert, werden alle abhängigen Mitgliedschaften automatisch aktualisiert:
+
+| Situation | Verhalten |
+|---|---|
+| Enddatum gesetzt/geändert | Abhängige ohne Enddatum oder mit späterem Enddatum werden mitgesetzt |
+| Abhängige mit früherem Enddatum | Werden **nicht** verändert |
+| Enddatum entfernt | Abhängige mit **gleichem** Enddatum werden ebenfalls auf unbefristet gesetzt |
+| Abhängige mit anderem (früherem) Enddatum | Werden **nicht** verändert |
+
+#### Validierung
+
+- Pflichtfeld: Bei abhängigem Typ muss eine übergeordnete Mitgliedschaft ausgewählt sein
+- Typprüfung: Die gewählte übergeordnete Mitgliedschaft muss vom konfigurierten übergeordneten Typ sein
+
+#### Datenbankänderungen
+
+| Tabelle | Neue Spalte | Beschreibung |
+|---|---|---|
+| `#__cluborganisation_membershiptypes` | `is_dependent` TINYINT(1) | Abhängiger Typ (0/1) |
+| `#__cluborganisation_membershiptypes` | `depends_on_type` INT UNSIGNED | FK auf übergeordneten Typ |
+| `#__cluborganisation_memberships` | `depends_on_membership_id` INT UNSIGNED | FK auf übergeordnete Mitgliedschaft |
+
+#### Neue/geänderte Dateien
+
+| Datei | Änderung |
+|---|---|
+| `2.3.0.sql` | Neu: Datenbank-Update-Script |
+| `mysql_install.sql` | Neue Spalten in beiden Tabellen |
+| `cluborganisation.xml` | Version 2.3.0, Datum März 2026 |
+| `membershiptype.xml` | 2 neue Formularfelder |
+| `membershiptype_edit.php` | Neue Felder gerendert |
+| `MembershiptypesModel.php` | JOIN auf übergeordneten Typ, `parent_type_title` |
+| `membershiptypes_default.php` | Neue Spalte in der Liste |
+| `membership.xml` | Neues Feld `depends_on_membership_id` |
+| `MembershipController.php` | AJAX-Task `getParentMemberships` |
+| `MembershipTable.php` | Validierung `checkDependentType()` |
+| `MembershipModel.php` | Cascade-Logik in `save()`, zwei private Hilfsmethoden |
+| `MembershipHtmlView.php` | Typ-Abhängigkeitsinfo + Zähler abhängiger Mitgliedschaften |
+| `membership_edit.php` | JS-Logik, Warnhinweis-Box, Feld-Rendering |
+| `de-DE.com_cluborganisation.ini` | Neue Sprachkonstanten |
+| `en-GB.com_cluborganisation.ini` | Neue Sprachkonstanten |
 
 ---
 

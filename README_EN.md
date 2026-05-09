@@ -1,6 +1,6 @@
 # ClubOrganisation – Joomla 5/6 Component
 
-**Version:** 2.1.0  
+**Version:** 2.3.0
 **License:** GPLv3 (see LICENSE)
 
 ---
@@ -38,6 +38,7 @@ A complete Joomla component for managing club memberships.
 - Date-based (begin/end), max one active at a time
 - Type categorisation (individual, family, etc.)
 - Overlap check on save
+- **Dependent membership types** (new in 2.3.0): fee-free types (e.g. family member) can be linked to a paying parent type; end dates are automatically cascaded
 
 #### Bank Accounts
 - AES-256-CBC encryption (account holder, IBAN, BIC)
@@ -170,4 +171,4 @@ GNU General Public License version 3 or later – see `LICENSE`.
 
 ---
 
-**Version:** 2.1.0 · **Date:** February 2026
+**Version:** 2.3.0 · **Date:** March 2026

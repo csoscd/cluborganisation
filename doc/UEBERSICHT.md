@@ -1,6 +1,6 @@
 # ClubOrganisation – Feature-Übersicht
 
-**Version:** 2.1.0  
+**Version:** 2.3.0
 **Joomla:** 5.x / 6.x
 
 ---
@@ -31,6 +31,13 @@ Zeitraum-basierte Mitgliedschaften:
 - Überschneidungsprüfung beim Speichern
 - Mehrere historische Mitgliedschaften pro Person möglich
 - Kategorisierung nach Mitgliedschaftstyp
+
+**Abhängige Mitgliedschaftstypen (neu in 2.3.0):**
+- Mitgliedschaftstypen können als „abhängig" markiert werden (z. B. „Familienmitglied" hängt von „Familienmitglied (zahlend)" ab)
+- Bei Anlage einer Mitgliedschaft mit abhängigem Typ muss die übergeordnete Mitgliedschaft ausgewählt werden
+- Endet die übergeordnete Mitgliedschaft, werden alle abhängigen Mitgliedschaften ohne früheres Enddatum automatisch mitbeendet
+- Wird das Enddatum der übergeordneten Mitgliedschaft entfernt, wird es auch bei abhängigen Mitgliedschaften mit gleichem Enddatum entfernt
+- Warnhinweis im Bearbeitungsformular bei Mitgliedschaften, die abhängige Mitgliedschaften haben
 
 ### 3. Bankdaten-Verwaltung
 
@@ -244,4 +251,4 @@ GROUP BY altersgruppe;
 
 ---
 
-**Stand:** Februar 2026 · **Version:** 2.1.0
+**Stand:** März 2026 · **Version:** 2.3.0
